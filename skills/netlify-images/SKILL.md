@@ -1,3 +1,8 @@
+---
+name: netlify-images
+description: Complete flow for handling user-uploaded images in Netlify deployments. Use when implementing image upload functionality, storing images in Netlify Blobs, serving images via API endpoints, or optimizing images with Netlify Image CDN. Covers Vite + React (using Netlify Functions) and Astro (using API routes). Includes client-side upload components, server-side upload handlers with validation, blob storage patterns, CDN configuration with redirects, and responsive image serving.
+---
+
 # Netlify Image Handling Skill
 
 This skill covers the complete flow for handling user-uploaded images in Netlify deployments, including uploading, storing in Netlify Blobs, serving via API endpoints, and optimizing with Netlify Image CDN.
@@ -29,39 +34,39 @@ netlify link
 
 ```tsx
 // src/components/ImageUpload.tsx
-import { useState } from 'react'
+import { useState } from "react";
 
 export function ImageUpload({ onSuccess }: { onSuccess?: () => void }) {
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError(null)
-    setUploading(true)
+    e.preventDefault();
+    setError(null);
+    setUploading(true);
 
-    const form = e.currentTarget
-    const formData = new FormData(form)
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload", {
+        method: "POST",
         body: formData,
-      })
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Upload failed')
+        const data = await response.json();
+        throw new Error(data.error || "Upload failed");
       }
 
-      form.reset()
-      onSuccess?.()
+      form.reset();
+      onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} encType="multipart/form-data">
@@ -72,11 +77,11 @@ export function ImageUpload({ onSuccess }: { onSuccess?: () => void }) {
         required
       />
       <button type="submit" disabled={uploading}>
-        {uploading ? 'Uploading...' : 'Upload'}
+        {uploading ? "Uploading..." : "Upload"}
       </button>
       {error && <p className="error">{error}</p>}
     </form>
-  )
+  );
 }
 ```
 
@@ -120,122 +125,130 @@ export function ImageUpload({ onSuccess }: { onSuccess?: () => void }) {
 
 ```typescript
 // netlify/functions/upload.mts
-import type { Context, Config } from '@netlify/functions'
-import { getStore } from '@netlify/blobs'
-import { randomUUID } from 'crypto'
+import type { Context, Config } from "@netlify/functions";
+import { getStore } from "@netlify/blobs";
+import { randomUUID } from "crypto";
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-const MAX_SIZE = 4 * 1024 * 1024 // 4 MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_SIZE = 4 * 1024 * 1024; // 4 MB
 
 export default async (request: Request, context: Context) => {
-  if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    const formData = await request.formData()
-    const image = formData.get('image') as File
+    const formData = await request.formData();
+    const image = formData.get("image") as File;
 
     // Validate file exists
     if (!image || !image.size) {
-      return Response.json({ error: 'No image provided' }, { status: 400 })
+      return Response.json({ error: "No image provided" }, { status: 400 });
     }
 
     // Validate file size
     if (image.size > MAX_SIZE) {
-      return Response.json({ error: 'File too large. Maximum size is 4 MB.' }, { status: 400 })
+      return Response.json(
+        { error: "File too large. Maximum size is 4 MB." },
+        { status: 400 },
+      );
     }
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(image.type)) {
-      return Response.json({ error: 'Invalid file type. Allowed: JPG, PNG, GIF, WebP' }, { status: 400 })
+      return Response.json(
+        { error: "Invalid file type. Allowed: JPG, PNG, GIF, WebP" },
+        { status: 400 },
+      );
     }
 
     // Generate unique key
-    const extension = image.name.split('.').pop() || 'jpg'
-    const key = `${randomUUID()}.${extension}`
+    const extension = image.name.split(".").pop() || "jpg";
+    const key = `${randomUUID()}.${extension}`;
 
     // Store in Netlify Blobs
-    const store = getStore({ name: 'images', consistency: 'strong' })
+    const store = getStore({ name: "images", consistency: "strong" });
     await store.set(key, image, {
       metadata: {
         contentType: image.type,
         originalFilename: image.name,
         uploadedAt: new Date().toISOString(),
       },
-    })
+    });
 
     return Response.json({
       success: true,
       key,
       url: `/img/${key}`, // CDN-optimized URL
-    })
+    });
   } catch (error) {
-    console.error('Upload error:', error)
-    return Response.json({ error: 'Upload failed' }, { status: 500 })
+    console.error("Upload error:", error);
+    return Response.json({ error: "Upload failed" }, { status: 500 });
   }
-}
+};
 
 export const config: Config = {
-  path: '/api/upload',
-}
+  path: "/api/upload",
+};
 ```
 
 ### Astro (API Route)
 
 ```typescript
 // src/pages/api/upload.ts
-import type { APIRoute } from 'astro'
-import { getStore } from '@netlify/blobs'
-import { randomUUID } from 'crypto'
+import type { APIRoute } from "astro";
+import { getStore } from "@netlify/blobs";
+import { randomUUID } from "crypto";
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-const MAX_SIZE = 4 * 1024 * 1024 // 4 MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_SIZE = 4 * 1024 * 1024; // 4 MB
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   try {
-    const formData = await request.formData()
-    const image = formData.get('image') as File
+    const formData = await request.formData();
+    const image = formData.get("image") as File;
 
     // Validate file exists
     if (!image || !image.size) {
-      return new Response('No image provided', { status: 400 })
+      return new Response("No image provided", { status: 400 });
     }
 
     // Validate file size
     if (image.size > MAX_SIZE) {
-      return new Response('File too large. Maximum size is 4 MB.', { status: 400 })
+      return new Response("File too large. Maximum size is 4 MB.", {
+        status: 400,
+      });
     }
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(image.type)) {
-      return new Response('Invalid file type', { status: 400 })
+      return new Response("Invalid file type", { status: 400 });
     }
 
     // Generate unique key
-    const extension = image.name.split('.').pop() || 'jpg'
-    const key = `${randomUUID()}.${extension}`
+    const extension = image.name.split(".").pop() || "jpg";
+    const key = `${randomUUID()}.${extension}`;
 
     // Store in Netlify Blobs
-    const store = getStore({ name: 'images', consistency: 'strong' })
+    const store = getStore({ name: "images", consistency: "strong" });
     await store.set(key, image, {
       metadata: {
         contentType: image.type,
         originalFilename: image.name,
         uploadedAt: new Date().toISOString(),
       },
-    })
+    });
 
     // Option 1: Redirect back (for form submissions)
-    return redirect('/?upload=success', 303)
+    return redirect("/?upload=success", 303);
 
     // Option 2: Return JSON (for fetch-based uploads)
     // return Response.json({ success: true, key, url: `/img/${key}` })
   } catch (error) {
-    console.error('Upload error:', error)
-    return new Response('Upload failed', { status: 500 })
+    console.error("Upload error:", error);
+    return new Response("Upload failed", { status: 500 });
   }
-}
+};
 ```
 
 ---
@@ -246,84 +259,84 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
 ```typescript
 // netlify/functions/serve-image.mts
-import type { Context, Config } from '@netlify/functions'
-import { getStore } from '@netlify/blobs'
+import type { Context, Config } from "@netlify/functions";
+import { getStore } from "@netlify/blobs";
 
 export default async (request: Request, context: Context) => {
-  if (request.method !== 'GET') {
-    return new Response('Method not allowed', { status: 405 })
+  if (request.method !== "GET") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
-  const key = context.params.key
+  const key = context.params.key;
   if (!key) {
-    return new Response('Not found', { status: 404 })
+    return new Response("Not found", { status: 404 });
   }
 
   try {
-    const store = getStore({ name: 'images', consistency: 'strong' })
-    const blob = await store.get(key, { type: 'stream' })
+    const store = getStore({ name: "images", consistency: "strong" });
+    const blob = await store.get(key, { type: "stream" });
 
     if (!blob) {
-      return new Response('Image not found', { status: 404 })
+      return new Response("Image not found", { status: 404 });
     }
 
     // Get metadata for content type
-    const metadata = await store.getMetadata(key)
-    const contentType = metadata?.metadata?.contentType || 'image/jpeg'
+    const metadata = await store.getMetadata(key);
+    const contentType = metadata?.metadata?.contentType || "image/jpeg";
 
     return new Response(blob, {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
-    })
+    });
   } catch (error) {
-    console.error('Serve error:', error)
-    return new Response('Error retrieving image', { status: 500 })
+    console.error("Serve error:", error);
+    return new Response("Error retrieving image", { status: 500 });
   }
-}
+};
 
 export const config: Config = {
-  path: '/uploads/:key',
-}
+  path: "/uploads/:key",
+};
 ```
 
 ### Astro (Dynamic Route)
 
 ```typescript
 // src/pages/uploads/[key].ts
-import type { APIRoute } from 'astro'
-import { getStore } from '@netlify/blobs'
+import type { APIRoute } from "astro";
+import { getStore } from "@netlify/blobs";
 
 export const GET: APIRoute = async ({ params }) => {
-  const key = params.key
+  const key = params.key;
   if (!key) {
-    return new Response('Not found', { status: 404 })
+    return new Response("Not found", { status: 404 });
   }
 
   try {
-    const store = getStore({ name: 'images', consistency: 'strong' })
-    const blob = await store.get(key, { type: 'stream' })
+    const store = getStore({ name: "images", consistency: "strong" });
+    const blob = await store.get(key, { type: "stream" });
 
     if (!blob) {
-      return new Response('Image not found', { status: 404 })
+      return new Response("Image not found", { status: 404 });
     }
 
     // Get metadata for content type
-    const metadata = await store.getMetadata(key)
-    const contentType = metadata?.metadata?.contentType || 'image/jpeg'
+    const metadata = await store.getMetadata(key);
+    const contentType = metadata?.metadata?.contentType || "image/jpeg";
 
     return new Response(blob, {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
-    })
+    });
   } catch (error) {
-    console.error('Serve error:', error)
-    return new Response('Error retrieving image', { status: 500 })
+    console.error("Serve error:", error);
+    return new Response("Error retrieving image", { status: 500 });
   }
-}
+};
 ```
 
 ---
@@ -378,15 +391,15 @@ status = 200
 
 ### CDN URL Parameters Reference
 
-| Parameter | Description | Values |
-|-----------|-------------|--------|
-| `url` | Source image path (required) | Relative or absolute URL |
-| `w` | Width in pixels | Any positive integer |
-| `h` | Height in pixels | Any positive integer |
-| `fit` | How to fit image to dimensions | `contain` (default), `cover`, `fill` |
+| Parameter  | Description                      | Values                                     |
+| ---------- | -------------------------------- | ------------------------------------------ |
+| `url`      | Source image path (required)     | Relative or absolute URL                   |
+| `w`        | Width in pixels                  | Any positive integer                       |
+| `h`        | Height in pixels                 | Any positive integer                       |
+| `fit`      | How to fit image to dimensions   | `contain` (default), `cover`, `fill`       |
 | `position` | Crop position (with `fit=cover`) | `center`, `top`, `bottom`, `left`, `right` |
-| `q` | Quality | 1-100 |
-| `fm` | Output format | `avif`, `webp`, `jpg`, `png`, `gif` |
+| `q`        | Quality                          | 1-100                                      |
+| `fm`       | Output format                    | `avif`, `webp`, `jpg`, `png`, `gif`        |
 
 ### Common Size Presets
 
