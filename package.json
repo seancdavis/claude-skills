@@ -9,5 +9,8 @@
     "url": "https://www.seancdavis.com/"
   },
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "prettier": "^3.8.1"
+  }
 }
