@@ -1,0 +1,15 @@
+{
+  "name": "seancdavis-skills-marketplace",
+  "description": "Sean's web development skills for Claude Code",
+  "plugins": [
+    {
+      "name": "seancdavis-skills",
+      "description": "Web development skills for Astro and Vite+React projects deployed to Netlify. Covers project scaffolding, authentication, data storage, forms, routing, and more.",
+      "version": "1.0.0",
+      "source": {
+        "type": "github",
+        "url": "https://github.com/seancdavis/claude-skills"
+      }
+    }
+  ]
+}
