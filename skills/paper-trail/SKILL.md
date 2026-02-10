@@ -5,10 +5,6 @@ description: Maintaining a decision log alongside Git history for capturing the 
 
 # Paper Trail
 
-Maintaining a decision log alongside Git history.
-
----
-
 ## Purpose
 
 Git commits capture **what** happened. This skill captures **why** decisions were made.
@@ -86,6 +82,7 @@ a squares game. The vast majority of interactions are read-only displays. Only
 a few forms for creating entries and casting votes.
 
 Options considered:
+
 - Next.js (App Router)
 - Astro with React islands
 - Vite + React SPA
@@ -95,6 +92,7 @@ Options considered:
 Use Astro with React components and server-side rendering.
 
 Reasons:
+
 - Most pages are content display (server rendering is ideal)
 - Only 2-3 interactive components (form submission, squares picker)
 - Ships minimal JavaScript by default
@@ -104,16 +102,19 @@ Reasons:
 ## Consequences
 
 **Easier:**
+
 - SEO and performance are handled automatically
 - No client-side routing complexity for mostly-static pages
 - Faster initial page loads
 
 **Harder:**
+
 - Need to think about which components need `client:*` directives
 - Can't use React context across the whole app (islands are isolated)
 - Some patterns from SPA world don't apply
 
 **Follow-up:**
+
 - Use React components (not Astro components) for anything that might
   eventually need interactivity
 ```
@@ -122,7 +123,7 @@ Reasons:
 
 ## Example: Technical Decision
 
-```markdown
+````markdown
 # 0002. Use Timestamp Prefixes for Migrations
 
 Date: 2024-01-16
@@ -145,26 +146,30 @@ Configure Drizzle to use Unix timestamp prefixes for migrations:
 // drizzle.config.ts
 export default defineConfig({
   migrations: {
-    prefix: 'timestamp'
-  }
+    prefix: 'timestamp',
+  },
 });
 ```
+````
 
 This produces migrations like `20240116123456_add_users_table.sql`.
 
 ## Consequences
 
 **Easier:**
+
 - Parallel branches can both create migrations without conflicts
 - Clear ordering by creation time
 - Safer for team development
 
 **Harder:**
+
 - Migration filenames are longer
 - Can't easily see "how many migrations" at a glance
 
 The trade-off is worth it for the merge safety.
-```
+
+````
 
 ---
 
@@ -185,7 +190,7 @@ sign in but aren't in the table see an "unauthorized" page.
 
 **Rationale:** Simpler than trying to restrict OAuth at the provider level.
 Allows adding users by just inserting rows.
-```
+````
 
 ---
 
@@ -251,10 +256,12 @@ Status: accepted
 ## Consequences
 
 **Easier:**
+
 - {benefit}
 - {benefit}
 
 **Harder:**
+
 - {trade-off}
 - {trade-off}
 ```

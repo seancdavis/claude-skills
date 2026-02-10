@@ -5,10 +5,6 @@ description: Environment variable management for Netlify projects. Use when conf
 
 # Environment Variables
 
-Environment variable management for Netlify projects.
-
----
-
 ## Core Principle
 
 **Always pull from Netlify** — work within the Netlify environment context.
@@ -37,11 +33,11 @@ The Netlify Vite plugin handles injection:
 
 ```typescript
 // vite.config.ts
-import netlify from '@netlify/vite-plugin'
+import netlify from '@netlify/vite-plugin';
 
 export default defineConfig({
   plugins: [netlify()],
-})
+});
 ```
 
 No additional configuration needed.
@@ -133,7 +129,7 @@ MANAGER_EMAILS="manager@example.com"
 
 ```typescript
 const dbUrl = process.env.NETLIFY_DATABASE_URL;
-const logLevel = process.env.LOG_LEVEL || "info";
+const logLevel = process.env.LOG_LEVEL || 'info';
 ```
 
 ### Client-Side (Vite)
@@ -203,6 +199,7 @@ netlify env:set --context branch:feature-x DEBUG=true
 ## Security Best Practices
 
 1. **Use --secret for sensitive values**
+
    ```bash
    netlify env:set --secret API_KEY "sk_live_..."
    ```
@@ -211,9 +208,9 @@ netlify env:set --context branch:feature-x DEBUG=true
    - No `.env` files with secrets in git
    - No hardcoded API keys
 
-3. **Use VITE_ prefix carefully**
+3. **Use VITE\_ prefix carefully**
    - Only for values safe to expose publicly
-   - API keys should never have VITE_ prefix
+   - API keys should never have VITE\_ prefix
 
 4. **Rotate compromised keys immediately**
    ```bash
@@ -228,7 +225,7 @@ netlify env:set --context branch:feature-x DEBUG=true
 
 ```typescript
 // Temporary debug - remove before committing
-console.log("Available env vars:", Object.keys(process.env));
+console.log('Available env vars:', Object.keys(process.env));
 ```
 
 ### Verify Injection
@@ -253,7 +250,7 @@ netlify link
 ## Anti-Patterns
 
 - **Storing secrets in .env files** - Use Netlify's env management
-- **Using VITE_ for secrets** - Exposes to client-side code
+- **Using VITE\_ for secrets** - Exposes to client-side code
 - **Hardcoding values** - Use environment variables for anything that varies
 - **Not using --secret flag** - Secrets should be hidden from logs
 - **Checking .env files into git** - Add to .gitignore

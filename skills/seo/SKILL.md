@@ -5,15 +5,12 @@ description: SEO best practices for both Astro and Vite + React projects. Use wh
 
 # SEO
 
-SEO best practices for Astro and Vite + React projects.
-
----
-
 ## Framework Considerations
 
 ### Astro (SSR/SSG)
 
 **Natural SEO advantages:**
+
 - Server-rendered HTML is immediately crawlable
 - No JavaScript required for content
 - Fast initial page loads
@@ -22,11 +19,13 @@ SEO best practices for Astro and Vite + React projects.
 ### Vite + React (SPA)
 
 **Challenges:**
+
 - Content is client-rendered
 - Search engines may not wait for JavaScript
 - Requires additional consideration
 
 **Solutions:**
+
 - Netlify pre-rendering for static content
 - Proper meta tag management
 - sitemap.xml generation
@@ -104,7 +103,7 @@ npm install react-helmet-async
 
 ```tsx
 // src/components/SEO.tsx
-import { Helmet } from "react-helmet-async";
+import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title: string;
@@ -115,8 +114,8 @@ interface SEOProps {
 
 export function SEO({
   title,
-  description = "Default site description",
-  image = "/og-image.png",
+  description = 'Default site description',
+  image = '/og-image.png',
   noindex = false,
 }: SEOProps) {
   const siteUrl = window.location.origin;
@@ -148,7 +147,7 @@ export function SEO({
 
 ```tsx
 // src/App.tsx
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider } from 'react-helmet-async';
 
 function App() {
   return (
@@ -161,15 +160,12 @@ function App() {
 
 ```tsx
 // src/pages/HomePage.tsx
-import { SEO } from "../components/SEO";
+import { SEO } from '../components/SEO';
 
 export function HomePage() {
   return (
     <>
-      <SEO
-        title="Home | My App"
-        description="Welcome to my application"
-      />
+      <SEO title="Home | My App" description="Welcome to my application" />
       <main>...</main>
     </>
   );
@@ -224,16 +220,16 @@ const org = {
 
 ```typescript
 const product = {
-  "@context": "https://schema.org",
-  "@type": "Product",
-  name: "Product Name",
-  description: "Product description",
-  image: "https://example.com/product.jpg",
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Product Name',
+  description: 'Product description',
+  image: 'https://example.com/product.jpg',
   offers: {
-    "@type": "Offer",
-    price: "19.99",
-    priceCurrency: "USD",
-    availability: "https://schema.org/InStock",
+    '@type': 'Offer',
+    price: '19.99',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
   },
 };
 ```
@@ -252,10 +248,10 @@ npx astro add sitemap
 
 ```javascript
 // astro.config.mjs
-import sitemap from "@astrojs/sitemap";
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: "https://yoursite.com",
+  site: 'https://yoursite.com',
   integrations: [sitemap()],
 });
 ```
@@ -266,26 +262,30 @@ Generate during build:
 
 ```typescript
 // scripts/generate-sitemap.js
-import { writeFileSync } from "fs";
+import { writeFileSync } from 'fs';
 
 const pages = [
-  "/",
-  "/about",
-  "/products",
+  '/',
+  '/about',
+  '/products',
   // Add dynamic pages from your data source
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${pages.map(page => `
+  ${pages
+    .map(
+      (page) => `
     <url>
       <loc>https://yoursite.com${page}</loc>
-      <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+      <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     </url>
-  `).join("")}
+  `,
+    )
+    .join('')}
 </urlset>`;
 
-writeFileSync("dist/sitemap.xml", sitemap);
+writeFileSync('dist/sitemap.xml', sitemap);
 ```
 
 Add to build:

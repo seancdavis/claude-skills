@@ -5,15 +5,12 @@ description: URL structure and routing conventions for both Astro and Vite + Rea
 
 # Routing Design
 
-URL structure and routing conventions across both frameworks.
-
----
-
 ## Core Principle
 
 **Every meaningful view change must produce a corresponding URL change.**
 
 Users should be able to:
+
 - Return to any view by bookmarking or sharing the URL
 - Use browser back/forward to navigate
 - Refresh the page without losing their place
@@ -24,22 +21,22 @@ Users should be able to:
 
 ### UI Routes
 
-| Route | Purpose |
-|-------|---------|
-| `/posts` | List all posts |
-| `/posts/new` | Create new post form |
-| `/posts/:id` | View single post |
-| `/posts/:id/edit` | Edit post form |
+| Route             | Purpose              |
+| ----------------- | -------------------- |
+| `/posts`          | List all posts       |
+| `/posts/new`      | Create new post form |
+| `/posts/:id`      | View single post     |
+| `/posts/:id/edit` | Edit post form       |
 
 ### API Routes
 
-| Method | Route | Purpose |
-|--------|-------|---------|
-| GET | `/api/posts` | List posts (JSON) |
-| POST | `/api/posts` | Create post |
-| GET | `/api/posts/:id` | Get single post |
-| PUT | `/api/posts/:id` | Update post |
-| DELETE | `/api/posts/:id` | Delete post |
+| Method | Route            | Purpose           |
+| ------ | ---------------- | ----------------- |
+| GET    | `/api/posts`     | List posts (JSON) |
+| POST   | `/api/posts`     | Create post       |
+| GET    | `/api/posts/:id` | Get single post   |
+| PUT    | `/api/posts/:id` | Update post       |
+| DELETE | `/api/posts/:id` | Delete post       |
 
 ---
 
@@ -80,12 +77,12 @@ if (!post) {
 
 ```typescript
 // src/pages/api/posts/[id].ts
-import type { APIRoute } from "astro";
+import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ params, redirect }) => {
   const post = await getPostById(params.id);
   if (!post) {
-    return new Response("Not found", { status: 404 });
+    return new Response('Not found', { status: 404 });
   }
   // For Astro SSR, typically redirect or render, not JSON
   return redirect(`/posts/${params.id}`, 302);
@@ -99,7 +96,7 @@ export const PUT: APIRoute = async ({ params, request, redirect }) => {
 
 export const DELETE: APIRoute = async ({ params, redirect }) => {
   await deletePost(params.id);
-  return redirect("/posts?message=post_deleted", 302);
+  return redirect('/posts?message=post_deleted', 302);
 };
 ```
 
@@ -111,7 +108,7 @@ Use React Router with explicit route definitions:
 
 ```tsx
 // src/App.tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
@@ -132,7 +129,7 @@ function App() {
 ### Accessing Route Params
 
 ```tsx
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
 function PostPage() {
   const { id } = useParams<{ id: string }>();
@@ -143,7 +140,7 @@ function PostPage() {
 ### Programmatic Navigation
 
 ```tsx
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 function CreatePostForm() {
   const navigate = useNavigate();
@@ -162,11 +159,13 @@ function CreatePostForm() {
 ### When to Use Query Parameters
 
 **Use for:**
+
 - Filtering/sorting on list views where permutations are unpredictable
 - Feedback messages in Astro SSR (see `feedback` skill)
 - Optional view modifiers (e.g., `?view=grid`)
 
 **Avoid for:**
+
 - Core navigation (use path segments instead)
 - State that defines the primary content being viewed
 
@@ -174,7 +173,7 @@ function CreatePostForm() {
 
 ```typescript
 // API route returns redirect with message key
-return redirect("/posts?message=post_created", 302);
+return redirect('/posts?message=post_created', 302);
 ```
 
 ```astro
@@ -188,12 +187,12 @@ const message = Astro.url.searchParams.get("message");
 ### React: Filtering
 
 ```tsx
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from 'react-router-dom';
 
 function PostsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const category = searchParams.get("category");
-  const sort = searchParams.get("sort") || "newest";
+  const category = searchParams.get('category');
+  const sort = searchParams.get('sort') || 'newest';
 
   const handleCategoryChange = (cat: string) => {
     setSearchParams({ category: cat, sort });
@@ -262,7 +261,7 @@ Modals should have their own URLs so users can link to them directly.
 ```tsx
 function PostsPage() {
   const [searchParams] = useSearchParams();
-  const editId = searchParams.get("edit");
+  const editId = searchParams.get('edit');
 
   return (
     <>
@@ -275,7 +274,7 @@ function PostsPage() {
 
 ```tsx
 // Opening the modal
-<Link to={`/posts?edit=${post.id}`}>Edit</Link>
+<Link to={`/posts?edit=${post.id}`}>Edit</Link>;
 
 // Closing the modal
 const [, setSearchParams] = useSearchParams();
@@ -294,7 +293,7 @@ const closeModal = () => {
 
 ```typescript
 // Good: Returns redirect
-return redirect("/posts?message=created", 302);
+return redirect('/posts?message=created', 302);
 
 // Bad: Returns JSON (in Astro SSR context)
 return Response.json({ success: true });
@@ -309,7 +308,7 @@ return Response.json({ success: true });
 return Response.json({ id: newPost.id, title: newPost.title });
 
 // The client handles navigation
-const post = await api.post("/posts", data);
+const post = await api.post('/posts', data);
 navigate(`/posts/${post.id}`);
 ```
 

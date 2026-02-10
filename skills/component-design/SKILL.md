@@ -5,10 +5,6 @@ description: Component architecture and organization patterns for React componen
 
 # Component Design
 
-Component architecture and organization patterns for React components.
-
----
-
 ## Core Principles
 
 1. **Single responsibility** - Each component does essentially one thing
@@ -43,12 +39,14 @@ components/
 ### Decision Framework
 
 Break into separate components when:
+
 - Logic is reused in multiple places
 - Component exceeds ~150 lines
 - A section has distinct responsibility (e.g., form vs. display)
 - Testing requires isolation
 
 Keep together when:
+
 - Logic is only used once
 - Breaking up adds cognitive overhead
 - Components are tightly coupled anyway
@@ -90,15 +88,15 @@ src/components/
 
 ```typescript
 // src/components/ui/index.ts
-export { Button } from "./Button";
-export { Card } from "./Card";
-export { Input } from "./Input";
-export { Toast } from "./Toast";
+export { Button } from './Button';
+export { Card } from './Card';
+export { Input } from './Input';
+export { Toast } from './Toast';
 ```
 
 ```typescript
 // Usage
-import { Button, Card, Input } from "../components/ui";
+import { Button, Card, Input } from '../components/ui';
 ```
 
 ---
@@ -126,7 +124,7 @@ function KanbanBoard() {
         {loading ? (
           <ColumnsSkeleton count={3} />
         ) : (
-          columns.map(col => <Column key={col.id} column={col} />)
+          columns.map((col) => <Column key={col.id} column={col} />)
         )}
       </div>
     </div>
@@ -145,7 +143,7 @@ function Column({ column }: { column: ColumnType }) {
       {loading ? (
         <ItemsSkeleton count={5} />
       ) : (
-        items.map(item => <Item key={item.id} item={item} />)
+        items.map((item) => <Item key={item.id} item={item} />)
       )}
     </div>
   );
@@ -161,9 +159,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div className={`animate-pulse bg-muted rounded ${className}`} />
-  );
+  return <div className={`animate-pulse bg-muted rounded ${className}`} />;
 }
 
 export function CardSkeleton() {
@@ -179,9 +175,15 @@ export function CardSkeleton() {
 export function TableRowSkeleton() {
   return (
     <tr>
-      <td><Skeleton className="h-4 w-24" /></td>
-      <td><Skeleton className="h-4 w-32" /></td>
-      <td><Skeleton className="h-4 w-16" /></td>
+      <td>
+        <Skeleton className="h-4 w-24" />
+      </td>
+      <td>
+        <Skeleton className="h-4 w-32" />
+      </td>
+      <td>
+        <Skeleton className="h-4 w-16" />
+      </td>
     </tr>
   );
 }
@@ -200,13 +202,11 @@ function ItemsList() {
   return (
     <div className="grid gap-4">
       {loading ? (
-        Array.from({ length: 6 }).map((_, i) => (
-          <CardSkeleton key={i} />
-        ))
+        Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
       ) : items.length === 0 ? (
         <EmptyState message="No items yet" />
       ) : (
-        items.map(item => <ItemCard key={item.id} item={item} />)
+        items.map((item) => <ItemCard key={item.id} item={item} />)
       )}
     </div>
   );
@@ -279,8 +279,8 @@ export function ProfilePage() {
 ```tsx
 function ItemsPage() {
   const [searchParams] = useSearchParams();
-  const editId = searchParams.get("edit");
-  const showCreate = searchParams.get("create") === "true";
+  const editId = searchParams.get('edit');
+  const showCreate = searchParams.get('create') === 'true';
 
   return (
     <>
@@ -303,7 +303,7 @@ function EditItemModal({ itemId }: { itemId: string }) {
   const { item, loading } = useItem(itemId);
 
   const handleClose = () => {
-    navigate("/items", { replace: true });
+    navigate('/items', { replace: true });
   };
 
   return (
@@ -343,15 +343,15 @@ function EditItemModal({ itemId }: { itemId: string }) {
 
 ```tsx
 interface ButtonProps {
-  as?: "button" | "a" | "Link";
+  as?: 'button' | 'a' | 'Link';
   href?: string;
   to?: string;
   // ...other props
 }
 
-function Button({ as = "button", href, to, ...props }: ButtonProps) {
-  if (as === "a") return <a href={href} {...props} />;
-  if (as === "Link") return <Link to={to!} {...props} />;
+function Button({ as = 'button', href, to, ...props }: ButtonProps) {
+  if (as === 'a') return <a href={href} {...props} />;
+  if (as === 'Link') return <Link to={to!} {...props} />;
   return <button {...props} />;
 }
 ```

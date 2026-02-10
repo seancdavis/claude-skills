@@ -5,10 +5,6 @@ description: Authentication patterns and implementation for Netlify projects usi
 
 # Auth Design
 
-Authentication patterns using Neon Auth with Google OAuth, deployed on Netlify.
-
----
-
 ## Three Tiers of Access Control
 
 ### Tier 1: Personal/Private Apps (Simplest)
@@ -59,12 +55,12 @@ The Neon Auth endpoint is provided when you enable auth in your Neon project.
 
 ```typescript
 // src/lib/auth.ts
-import { createAuthClient } from "@neondatabase/neon-js/auth";
-import type { AuthClient } from "@neondatabase/neon-js/auth";
+import { createAuthClient } from '@neondatabase/neon-js/auth';
+import type { AuthClient } from '@neondatabase/neon-js/auth';
 
 export function getOrigin(request: Request): string {
   const url = new URL(request.url);
-  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
+  const proto = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
   return `${proto}://${url.host}`;
 }
 
@@ -77,7 +73,7 @@ export function createAuthClientForOrigin(origin: string): AuthClient {
 
 ```typescript
 // src/lib/auth.ts
-import { createAuthClient } from "@neondatabase/neon-js/auth";
+import { createAuthClient } from '@neondatabase/neon-js/auth';
 
 const getAuthUrl = () => {
   if (import.meta.env.PROD) {
@@ -97,16 +93,16 @@ export const authClient = createAuthClient(getAuthUrl());
 
 ```typescript
 // db/schema.ts
-import { boolean, integer, pgTable, varchar, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 
-export const approvedUsers = pgTable("approved_users", {
+export const approvedUsers = pgTable('approved_users', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   email: varchar({ length: 255 }).notNull().unique(),
   name: varchar({ length: 255 }),
-  customImage: varchar("custom_image", { length: 255 }),
-  isAdmin: boolean("is_admin").notNull().default(false),
-  addedAt: timestamp("added_at").defaultNow(),
-  addedBy: varchar("added_by", { length: 255 }),
+  customImage: varchar('custom_image', { length: 255 }),
+  isAdmin: boolean('is_admin').notNull().default(false),
+  addedAt: timestamp('added_at').defaultNow(),
+  addedBy: varchar('added_by', { length: 255 }),
   notes: text(),
 });
 ```
@@ -115,7 +111,7 @@ export const approvedUsers = pgTable("approved_users", {
 
 ```typescript
 // src/lib/auth.ts
-import { eq } from "drizzle-orm";
+import { eq } from 'drizzle-orm';
 
 export type User = {
   id: string;
@@ -126,11 +122,11 @@ export type User = {
 
 export async function getUser(request: Request): Promise<User | null> {
   const origin = getOrigin(request);
-  const cookies = request.headers.get("cookie") || "";
+  const cookies = request.headers.get('cookie') || '';
 
   try {
     const response = await fetch(`${origin}/neon-auth/get-session`, {
-      method: "GET",
+      method: 'GET',
       headers: { cookie: cookies },
     });
 
@@ -146,13 +142,13 @@ export async function getUser(request: Request): Promise<User | null> {
       image: data.user.image ?? null,
     };
   } catch (error) {
-    console.error("Error getting session:", error);
+    console.error('Error getting session:', error);
     return null;
   }
 }
 
 export async function isUserApproved(email: string): Promise<boolean> {
-  const { db, approvedUsers } = await import("../db");
+  const { db, approvedUsers } = await import('../db');
 
   const [user] = await db
     .select()
@@ -164,7 +160,7 @@ export async function isUserApproved(email: string): Promise<boolean> {
 }
 
 export async function isUserAdmin(email: string): Promise<boolean> {
-  const { db, approvedUsers } = await import("../db");
+  const { db, approvedUsers } = await import('../db');
 
   const [user] = await db
     .select()
@@ -176,12 +172,12 @@ export async function isUserAdmin(email: string): Promise<boolean> {
 }
 
 export async function getUserWithApproval(
-  request: Request
+  request: Request,
 ): Promise<{ user: User; isApproved: boolean; isAdmin: boolean } | null> {
   const user = await getUser(request);
   if (!user) return null;
 
-  const { db, approvedUsers } = await import("../db");
+  const { db, approvedUsers } = await import('../db');
 
   const [approvedUser] = await db
     .select()
@@ -250,51 +246,51 @@ if (user) {
 
 ```typescript
 // src/pages/api/auth/callback.ts
-import type { APIRoute } from "astro";
-import { getOrigin } from "../../../lib/auth";
-import { logger } from "../../../lib/logger";
+import type { APIRoute } from 'astro';
+import { getOrigin } from '../../../lib/auth';
+import { logger } from '../../../lib/logger';
 
-const log = logger.scope("CALLBACK");
+const log = logger.scope('CALLBACK');
 
 export const GET: APIRoute = async ({ request, redirect }) => {
   const url = new URL(request.url);
-  const verifier = url.searchParams.get("neon_auth_session_verifier");
-  const destination = url.searchParams.get("redirect") || "/";
+  const verifier = url.searchParams.get('neon_auth_session_verifier');
+  const destination = url.searchParams.get('redirect') || '/';
   const origin = getOrigin(request);
 
   if (!verifier) {
-    log.warn("No verifier in callback");
-    return redirect("/login", 302);
+    log.warn('No verifier in callback');
+    return redirect('/login', 302);
   }
 
   try {
-    const cookies = request.headers.get("cookie") || "";
+    const cookies = request.headers.get('cookie') || '';
 
     const sessionResponse = await fetch(
       `${origin}/neon-auth/get-session?neon_auth_session_verifier=${verifier}`,
       {
-        method: "GET",
+        method: 'GET',
         headers: { cookie: cookies, Origin: origin },
-      }
+      },
     );
 
     if (!sessionResponse.ok) {
-      log.error("Session error");
-      return redirect("/login?message=auth_error", 302);
+      log.error('Session error');
+      return redirect('/login?message=auth_error', 302);
     }
 
     const response = redirect(`${destination}?message=signed_in`, 302);
 
     // Forward session cookies
     for (const cookie of sessionResponse.headers.getSetCookie()) {
-      response.headers.append("Set-Cookie", cookie);
+      response.headers.append('Set-Cookie', cookie);
     }
 
-    log.info("Session established");
+    log.info('Session established');
     return response;
   } catch (error) {
-    log.error("Callback error:", error);
-    return redirect("/login?message=auth_error", 302);
+    log.error('Callback error:', error);
+    return redirect('/login?message=auth_error', 302);
   }
 };
 ```
@@ -303,17 +299,17 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
 ```typescript
 // src/pages/api/auth/signin.ts
-import type { APIRoute } from "astro";
-import { createAuthClientForOrigin, getOrigin } from "../../../lib/auth";
+import type { APIRoute } from 'astro';
+import { createAuthClientForOrigin, getOrigin } from '../../../lib/auth';
 
 export const GET: APIRoute = async ({ request, redirect }) => {
   const url = new URL(request.url);
-  const destination = url.searchParams.get("redirect") || "/";
+  const destination = url.searchParams.get('redirect') || '/';
   const origin = getOrigin(request);
 
   const authClient = createAuthClientForOrigin(origin);
   const authUrl = await authClient.getOAuthUrl({
-    provider: "google",
+    provider: 'google',
     redirectUrl: `${origin}/api/auth/callback?redirect=${encodeURIComponent(destination)}`,
   });
 
@@ -323,19 +319,19 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
 ```typescript
 // src/pages/api/auth/signout.ts
-import type { APIRoute } from "astro";
-import { createAuthClientForOrigin, getOrigin } from "../../../lib/auth";
+import type { APIRoute } from 'astro';
+import { createAuthClientForOrigin, getOrigin } from '../../../lib/auth';
 
 export const GET: APIRoute = async ({ request, redirect }) => {
   const origin = getOrigin(request);
   const authClient = createAuthClientForOrigin(origin);
 
-  const response = redirect("/?message=signed_out", 302);
+  const response = redirect('/?message=signed_out', 302);
 
   // Clear session cookies
   const signOutResponse = await authClient.signOut();
   for (const cookie of signOutResponse.headers.getSetCookie()) {
-    response.headers.append("Set-Cookie", cookie);
+    response.headers.append('Set-Cookie', cookie);
   }
 
   return response;
@@ -350,8 +346,8 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
 ```typescript
 // src/hooks/useAuth.ts
-import { useState, useEffect, createContext, useContext } from "react";
-import { authClient } from "../lib/auth";
+import { useState, useEffect, createContext, useContext } from 'react';
+import { authClient } from '../lib/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -385,7 +381,7 @@ export function useAuthProvider(): AuthContextType {
   }, []);
 
   const signIn = () => {
-    authClient.signIn({ provider: "google" });
+    authClient.signIn({ provider: 'google' });
   };
 
   const signOut = async () => {
@@ -406,7 +402,7 @@ export function useAuthProvider(): AuthContextType {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }
 ```
@@ -442,8 +438,8 @@ For Vite + React, auth info is passed via headers from the client:
 ```typescript
 // netlify/functions/_shared/auth.ts
 export async function requireAuth(req: Request): Promise<AuthResult> {
-  const userId = req.headers.get("x-user-id");
-  const email = req.headers.get("x-user-email");
+  const userId = req.headers.get('x-user-id');
+  const email = req.headers.get('x-user-email');
 
   if (!userId || !email) {
     return { authenticated: false };
@@ -463,16 +459,14 @@ Neon Auth cookies may need adjustments for Safari ITP and localhost:
 ```typescript
 function fixCookieForLocalhost(cookie: string): string {
   return cookie
-    .replace(/^__Secure-/i, "")
-    .replace(/;\s*Secure/gi, "")
-    .replace(/;\s*Partitioned/gi, "")
-    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+    .replace(/^__Secure-/i, '')
+    .replace(/;\s*Secure/gi, '')
+    .replace(/;\s*Partitioned/gi, '')
+    .replace(/;\s*SameSite=None/gi, '; SameSite=Lax');
 }
 
 function fixCookieForSafari(cookie: string): string {
-  return cookie
-    .replace(/;\s*Partitioned/gi, "")
-    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+  return cookie.replace(/;\s*Partitioned/gi, '').replace(/;\s*SameSite=None/gi, '; SameSite=Lax');
 }
 ```
 
@@ -494,11 +488,11 @@ function fixCookieForSafari(cookie: string): string {
 Always log auth events for security monitoring:
 
 ```typescript
-const log = logger.scope("AUTH");
+const log = logger.scope('AUTH');
 
-log.info("User authenticated:", user.email);
-log.warn("Unapproved user attempted access:", email);
-log.error("Session verification failed");
+log.info('User authenticated:', user.email);
+log.warn('Unapproved user attempted access:', email);
+log.error('Session verification failed');
 ```
 
 See `logging-and-monitoring` skill for Discord notification integration.

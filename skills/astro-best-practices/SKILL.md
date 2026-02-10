@@ -5,10 +5,6 @@ description: Conventions and patterns for Astro projects deployed to Netlify. Us
 
 # Astro Best Practices
 
-Conventions and patterns for building Astro applications deployed to Netlify.
-
----
-
 ## Core Principles
 
 1. **Server-first rendering** - Render as much as possible on the server
@@ -23,13 +19,13 @@ Conventions and patterns for building Astro applications deployed to Netlify.
 ### astro.config.mjs
 
 ```javascript
-import { defineConfig } from "astro/config";
-import netlify from "@astrojs/netlify";
-import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from 'astro/config';
+import netlify from '@astrojs/netlify';
+import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  output: "server",
+  output: 'server',
   adapter: netlify(),
   integrations: [react()],
   vite: {
@@ -90,6 +86,7 @@ import { Button } from "../components/ui/Button";
 ### Astro Pages as Orchestrators
 
 Astro pages and layouts:
+
 - Handle routing (file-based)
 - Fetch data server-side
 - Compose React components
@@ -119,13 +116,13 @@ Push client directives **as far down the component tree as possible** to minimiz
 
 ### Directive Reference
 
-| Directive | When to Use |
-|-----------|-------------|
-| `client:load` | Interactive immediately on page load |
-| `client:idle` | Interactive after page becomes idle |
-| `client:visible` | Interactive when scrolled into view |
-| `client:media` | Interactive at specific breakpoint |
-| `client:only="react"` | Never SSR, client-only |
+| Directive             | When to Use                          |
+| --------------------- | ------------------------------------ |
+| `client:load`         | Interactive immediately on page load |
+| `client:idle`         | Interactive after page becomes idle  |
+| `client:visible`      | Interactive when scrolled into view  |
+| `client:media`        | Interactive at specific breakpoint   |
+| `client:only="react"` | Never SSR, client-only               |
 
 ### Bad: Directive on Layout Component
 
@@ -226,42 +223,42 @@ API routes handle mutations and return **redirects with feedback message keys**.
 
 ```typescript
 // src/pages/api/entries.ts
-import type { APIRoute } from "astro";
-import { getUserWithApproval } from "../../lib/auth";
-import { createEntry } from "../../lib/entries";
-import { logger } from "../../lib/logger";
+import type { APIRoute } from 'astro';
+import { getUserWithApproval } from '../../lib/auth';
+import { createEntry } from '../../lib/entries';
+import { logger } from '../../lib/logger';
 
-const log = logger.scope("ENTRIES");
+const log = logger.scope('ENTRIES');
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   // Auth check
   const auth = await getUserWithApproval(request);
   if (!auth) {
-    return redirect("/login?message=auth_error", 302);
+    return redirect('/login?message=auth_error', 302);
   }
   if (!auth.isApproved) {
-    return redirect("/unauthorized?message=unauthorized", 302);
+    return redirect('/unauthorized?message=unauthorized', 302);
   }
 
   // Parse form data
   const formData = await request.formData();
-  const title = formData.get("title")?.toString().trim();
-  const description = formData.get("description")?.toString().trim();
+  const title = formData.get('title')?.toString().trim();
+  const description = formData.get('description')?.toString().trim();
 
   // Validate
   if (!title || !description) {
-    log.warn("Missing required fields");
-    return redirect("/entries/new?message=validation_error", 302);
+    log.warn('Missing required fields');
+    return redirect('/entries/new?message=validation_error', 302);
   }
 
   // Create
   try {
     await createEntry({ title, description, userEmail: auth.user.email });
-    log.info("Entry created for:", auth.user.email);
-    return redirect("/entries?message=entry_created", 302);
+    log.info('Entry created for:', auth.user.email);
+    return redirect('/entries?message=entry_created', 302);
   } catch (error) {
-    log.error("Failed to create entry:", error);
-    return redirect("/entries/new?message=create_failed", 302);
+    log.error('Failed to create entry:', error);
+    return redirect('/entries/new?message=create_failed', 302);
   }
 };
 ```
@@ -273,12 +270,12 @@ For PUT/DELETE from HTML forms (which only support GET/POST):
 ```typescript
 export const POST: APIRoute = async ({ request, redirect }) => {
   const formData = await request.formData();
-  const method = formData.get("_method")?.toString() || "POST";
+  const method = formData.get('_method')?.toString() || 'POST';
 
-  if (method === "DELETE") {
+  if (method === 'DELETE') {
     return handleDelete(formData, redirect);
   }
-  if (method === "PUT") {
+  if (method === 'PUT') {
     return handleUpdate(formData, redirect);
   }
   return handleCreate(formData, redirect);
@@ -288,7 +285,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 ```html
 <form action="/api/entries" method="post">
   <input type="hidden" name="_method" value="DELETE" />
-  <input type="hidden" name="id" value={entry.id} />
+  <input type="hidden" name="id" value="{entry.id}" />
   <button type="submit">Delete</button>
 </form>
 ```

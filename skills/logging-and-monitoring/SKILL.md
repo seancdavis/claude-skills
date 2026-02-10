@@ -5,25 +5,21 @@ description: Server-side logging conventions and external monitoring patterns. U
 
 # Logging and Monitoring
 
-Server-side logging conventions and external monitoring.
-
----
-
 ## Logging Utility
 
 ### Three Log Levels
 
-| Level | When to Use | Default State |
-|-------|-------------|---------------|
-| `info` | Database mutations, important events | Always shown |
-| `error` | Failures, exceptions | Always shown |
-| `debug` | Verbose diagnostic info | Off by default |
+| Level   | When to Use                          | Default State  |
+| ------- | ------------------------------------ | -------------- |
+| `info`  | Database mutations, important events | Always shown   |
+| `error` | Failures, exceptions                 | Always shown   |
+| `debug` | Verbose diagnostic info              | Off by default |
 
 ### Implementation
 
 ```typescript
 // src/lib/logger.ts
-type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 interface LoggerConfig {
   level: LogLevel;
@@ -31,56 +27,50 @@ interface LoggerConfig {
 }
 
 const colors = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  magenta: "\x1b[35m",
-  cyan: "\x1b[36m",
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
 };
 
 const levelConfig = {
-  debug: { priority: 0, color: colors.magenta, label: "DEBUG" },
-  info: { priority: 1, color: colors.cyan, label: " INFO" },
-  warn: { priority: 2, color: colors.yellow, label: " WARN" },
-  error: { priority: 3, color: colors.red, label: "ERROR" },
+  debug: { priority: 0, color: colors.magenta, label: 'DEBUG' },
+  info: { priority: 1, color: colors.cyan, label: ' INFO' },
+  warn: { priority: 2, color: colors.yellow, label: ' WARN' },
+  error: { priority: 3, color: colors.red, label: 'ERROR' },
 };
 
 function getConfig(): LoggerConfig {
-  const level = (process.env.LOG_LEVEL || "info").toLowerCase() as LogLevel;
-  const colorsEnabled = process.env.LOG_COLORS !== "false";
+  const level = (process.env.LOG_LEVEL || 'info').toLowerCase() as LogLevel;
+  const colorsEnabled = process.env.LOG_COLORS !== 'false';
 
   return {
-    level: ["debug", "info", "warn", "error", "silent"].includes(level)
-      ? level
-      : "info",
+    level: ['debug', 'info', 'warn', 'error', 'silent'].includes(level) ? level : 'info',
     colors: colorsEnabled,
   };
 }
 
 function shouldLog(level: keyof typeof levelConfig): boolean {
   const config = getConfig();
-  if (config.level === "silent") return false;
+  if (config.level === 'silent') return false;
   return levelConfig[level].priority >= levelConfig[config.level].priority;
 }
 
 function formatTimestamp(): string {
-  return new Date().toLocaleTimeString("en-US", {
+  return new Date().toLocaleTimeString('en-US', {
     hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
 }
 
-function log(
-  level: keyof typeof levelConfig,
-  scope: string,
-  ...args: unknown[]
-): void {
+function log(level: keyof typeof levelConfig, scope: string, ...args: unknown[]): void {
   if (!shouldLog(level)) return;
 
   const config = getConfig();
@@ -88,10 +78,8 @@ function log(
   const timestamp = formatTimestamp();
 
   const message = args
-    .map((arg) =>
-      typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg)
-    )
-    .join(" ");
+    .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+    .join(' ');
 
   if (config.colors) {
     const formatted = `${color}${colors.bold}[${label}]${colors.reset} ${colors.dim}[${scope}] ${timestamp}${colors.reset} ${message}`;
@@ -111,18 +99,18 @@ interface ScopedLogger {
 
 function createScopedLogger(scope: string): ScopedLogger {
   return {
-    debug: (...args) => log("debug", scope, ...args),
-    info: (...args) => log("info", scope, ...args),
-    warn: (...args) => log("warn", scope, ...args),
-    error: (...args) => log("error", scope, ...args),
+    debug: (...args) => log('debug', scope, ...args),
+    info: (...args) => log('info', scope, ...args),
+    warn: (...args) => log('warn', scope, ...args),
+    error: (...args) => log('error', scope, ...args),
   };
 }
 
 export const logger = {
-  debug: (scope: string, ...args: unknown[]) => log("debug", scope, ...args),
-  info: (scope: string, ...args: unknown[]) => log("info", scope, ...args),
-  warn: (scope: string, ...args: unknown[]) => log("warn", scope, ...args),
-  error: (scope: string, ...args: unknown[]) => log("error", scope, ...args),
+  debug: (scope: string, ...args: unknown[]) => log('debug', scope, ...args),
+  info: (scope: string, ...args: unknown[]) => log('info', scope, ...args),
+  warn: (scope: string, ...args: unknown[]) => log('warn', scope, ...args),
+  error: (scope: string, ...args: unknown[]) => log('error', scope, ...args),
   scope: createScopedLogger,
 };
 
@@ -136,23 +124,23 @@ export type { ScopedLogger };
 ### Scoped Logger (Preferred)
 
 ```typescript
-import { logger } from "../lib/logger";
+import { logger } from '../lib/logger';
 
-const log = logger.scope("ENTRIES");
+const log = logger.scope('ENTRIES');
 
-log.debug("Fetching entries for user:", userId);
-log.info("Entry created:", entry.id);
-log.warn("User attempted to access locked resource");
-log.error("Failed to save entry:", error.message);
+log.debug('Fetching entries for user:', userId);
+log.info('Entry created:', entry.id);
+log.warn('User attempted to access locked resource');
+log.error('Failed to save entry:', error.message);
 ```
 
 ### Direct Logger
 
 ```typescript
-import { logger } from "../lib/logger";
+import { logger } from '../lib/logger';
 
-logger.info("AUTH", "User authenticated:", user.email);
-logger.error("DB", "Query failed:", error);
+logger.info('AUTH', 'User authenticated:', user.email);
+logger.error('DB', 'Query failed:', error);
 ```
 
 ---
@@ -178,9 +166,9 @@ LOG_COLORS=false
 
 ```typescript
 // Database mutations with summary context
-log.info("Entry created for:", user.email);
-log.info("User profile updated:", { userId, fieldsChanged: ["name", "image"] });
-log.info("Session established for:", user.email);
+log.info('Entry created for:', user.email);
+log.info('User profile updated:', { userId, fieldsChanged: ['name', 'image'] });
+log.info('Session established for:', user.email);
 
 // Don't log all data, just enough to identify what happened
 ```
@@ -189,20 +177,20 @@ log.info("Session established for:", user.email);
 
 ```typescript
 // Provide helpful context
-log.error("Failed to create entry:", error.message);
-log.error("Database connection failed:", { host, error: error.message });
+log.error('Failed to create entry:', error.message);
+log.error('Database connection failed:', { host, error: error.message });
 
 // Surface to user via feedback system
-return redirect("/form?message=create_failed", 302);
+return redirect('/form?message=create_failed', 302);
 ```
 
 ### Debug Level (Verbose, Off by Default)
 
 ```typescript
 // Intentionally verbose - once added, leave in place
-log.debug("Request headers:", Object.fromEntries(request.headers));
-log.debug("Session response:", response.status, response.headers);
-log.debug("Query params:", { page, limit, filter });
+log.debug('Request headers:', Object.fromEntries(request.headers));
+log.debug('Session response:', response.status, response.headers);
+log.debug('Query params:', { page, limit, filter });
 ```
 
 ---
@@ -212,19 +200,19 @@ log.debug("Query params:", { page, limit, filter });
 Always log authentication events:
 
 ```typescript
-const log = logger.scope("AUTH");
+const log = logger.scope('AUTH');
 
 // Successful auth
-log.info("User authenticated:", user.email);
+log.info('User authenticated:', user.email);
 
 // Failed auth
-log.warn("Invalid session verifier received");
+log.warn('Invalid session verifier received');
 
 // Unapproved user
-log.warn("Unapproved user attempted access:", email);
+log.warn('Unapproved user attempted access:', email);
 
 // Sign out
-log.info("User signed out:", user.email);
+log.info('User signed out:', user.email);
 ```
 
 ---
@@ -250,68 +238,65 @@ interface DiscordEmbed {
   timestamp?: string;
 }
 
-async function sendToDiscord(
-  webhookUrl: string,
-  message: DiscordMessage
-): Promise<void> {
+async function sendToDiscord(webhookUrl: string, message: DiscordMessage): Promise<void> {
   try {
     await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(message),
     });
   } catch (error) {
     // Don't let notification failures break the app
-    console.error("Discord notification failed:", error);
+    console.error('Discord notification failed:', error);
   }
 }
 
 const COLORS = {
-  info: 0x3498db,    // Blue
+  info: 0x3498db, // Blue
   success: 0x2ecc71, // Green
   warning: 0xf1c40f, // Yellow
-  error: 0xe74c3c,   // Red
+  error: 0xe74c3c, // Red
 };
 
-export async function notifyError(
-  app: string,
-  title: string,
-  description: string
-): Promise<void> {
+export async function notifyError(app: string, title: string, description: string): Promise<void> {
   const webhookUrl = process.env.DISCORD_ERROR_WEBHOOK;
   if (!webhookUrl) return;
 
   await sendToDiscord(webhookUrl, {
-    embeds: [{
-      title: `🚨 ${app}: ${title}`,
-      description,
-      color: COLORS.error,
-      timestamp: new Date().toISOString(),
-    }],
+    embeds: [
+      {
+        title: `🚨 ${app}: ${title}`,
+        description,
+        color: COLORS.error,
+        timestamp: new Date().toISOString(),
+      },
+    ],
   });
 }
 
 export async function notifyAuth(
   app: string,
-  event: "signin" | "signout" | "unauthorized",
-  email: string
+  event: 'signin' | 'signout' | 'unauthorized',
+  email: string,
 ): Promise<void> {
   const webhookUrl = process.env.DISCORD_AUTH_WEBHOOK;
   if (!webhookUrl) return;
 
   const icons = {
-    signin: "🔓",
-    signout: "🔒",
-    unauthorized: "⚠️",
+    signin: '🔓',
+    signout: '🔒',
+    unauthorized: '⚠️',
   };
 
   await sendToDiscord(webhookUrl, {
-    embeds: [{
-      title: `${icons[event]} ${app}: ${event}`,
-      description: email,
-      color: event === "unauthorized" ? COLORS.warning : COLORS.info,
-      timestamp: new Date().toISOString(),
-    }],
+    embeds: [
+      {
+        title: `${icons[event]} ${app}: ${event}`,
+        description: email,
+        color: event === 'unauthorized' ? COLORS.warning : COLORS.info,
+        timestamp: new Date().toISOString(),
+      },
+    ],
   });
 }
 ```
@@ -328,6 +313,7 @@ export async function notifyAuth(
 Not currently in use. Will be introduced for serious production applications.
 
 When implemented, will provide:
+
 - Error tracking and grouping
 - Performance monitoring
 - Release tracking

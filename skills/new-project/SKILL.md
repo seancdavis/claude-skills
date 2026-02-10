@@ -15,24 +15,24 @@ Before writing any code, gather requirements and make architectural decisions.
 
 ### Framework Decision Matrix
 
-| Choose Astro when... | Choose Vite + React when... |
-|---------------------|---------------------------|
-| Content-heavy site (blog, docs, marketing) | Highly interactive app (dashboard, tool) |
-| Mostly read-only data display | Frequent data input and updates |
-| ~95% of UI has no interactions beyond clicking | Real-time updates or complex state |
-| SEO is critical | Client-side state management needed |
-| Progressive enhancement desired | Heavy client-side logic |
+| Choose Astro when...                           | Choose Vite + React when...              |
+| ---------------------------------------------- | ---------------------------------------- |
+| Content-heavy site (blog, docs, marketing)     | Highly interactive app (dashboard, tool) |
+| Mostly read-only data display                  | Frequent data input and updates          |
+| ~95% of UI has no interactions beyond clicking | Real-time updates or complex state       |
+| SEO is critical                                | Client-side state management needed      |
+| Progressive enhancement desired                | Heavy client-side logic                  |
 
 **Default to Astro** unless there's a clear need for constant interactivity.
 
 ### Data Storage Decision
 
-| Use Netlify Blobs when... | Use Netlify DB when... |
-|--------------------------|----------------------|
-| Only storing files | Storing structured data |
-| Handful of records, no growth expected | Data will grow over time |
-| No relational needs | Need queries, filtering, relations |
-| Want zero third-party dependencies | Need SQL capabilities |
+| Use Netlify Blobs when...              | Use Netlify DB when...             |
+| -------------------------------------- | ---------------------------------- |
+| Only storing files                     | Storing structured data            |
+| Handful of records, no growth expected | Data will grow over time           |
+| No relational needs                    | Need queries, filtering, relations |
+| Want zero third-party dependencies     | Need SQL capabilities              |
 
 **Default to Netlify DB** for most non-trivial applications.
 
@@ -52,6 +52,7 @@ Before writing any code, gather requirements and make architectural decisions.
 ### Step 1: Scaffold the Project
 
 **For Astro:**
+
 ```bash
 # Create new Astro project
 npm create astro@latest {project-name} -- --template minimal --typescript strict
@@ -63,6 +64,7 @@ npx astro add netlify react tailwind
 ```
 
 **For Vite + React:**
+
 ```bash
 # Create new Vite project
 npm create vite@latest {project-name} -- --template react-ts
@@ -77,14 +79,15 @@ npm install -D @netlify/vite-plugin @netlify/functions @tailwindcss/vite tailwin
 ### Step 2: Configure the Project
 
 **Astro - astro.config.mjs:**
+
 ```javascript
-import { defineConfig } from "astro/config";
-import netlify from "@astrojs/netlify";
-import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from 'astro/config';
+import netlify from '@astrojs/netlify';
+import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  output: "server",
+  output: 'server',
   adapter: netlify(),
   integrations: [react()],
   vite: {
@@ -94,20 +97,22 @@ export default defineConfig({
 ```
 
 **Vite + React - vite.config.ts:**
+
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import netlify from '@netlify/vite-plugin'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import netlify from '@netlify/vite-plugin';
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), netlify()],
-})
+});
 ```
 
 ### Step 3: Configure package.json scripts
 
 **Astro:**
+
 ```json
 {
   "scripts": {
@@ -119,6 +124,7 @@ export default defineConfig({
 ```
 
 **Vite + React:**
+
 ```json
 {
   "scripts": {
@@ -132,6 +138,7 @@ export default defineConfig({
 ### Step 4: Create netlify.toml
 
 **Astro:**
+
 ```toml
 [build]
   command = "npm run build"
@@ -143,6 +150,7 @@ export default defineConfig({
 ```
 
 **Vite + React:**
+
 ```toml
 [build]
   command = "npm run build"
@@ -180,14 +188,17 @@ gh repo create {project-name} --private --source=. --push
    - Deploy with default settings
 
 2. **Link Local Project**
+
    ```bash
    netlify link
    ```
 
 3. **Initialize Database (if using Netlify DB)**
+
    ```bash
    netlify db init
    ```
+
    - This provisions a Neon database
    - Sets up Drizzle ORM automatically
 
@@ -214,13 +225,13 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NETLIFY_DATABASE_URL!
+    url: process.env.NETLIFY_DATABASE_URL!,
   },
   schema: './db/schema.ts',
   out: './migrations',
   migrations: {
-    prefix: 'timestamp'
-  }
+    prefix: 'timestamp',
+  },
 });
 ```
 
@@ -246,7 +257,7 @@ import readline from 'readline';
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 console.log('\n⚠️  PRODUCTION DATABASE MIGRATION\n');
@@ -286,6 +297,7 @@ Based on the project requirements, implement patterns from:
 ## Checklist
 
 ### Pre-Build
+
 - [ ] Framework decision made (Astro / Vite + React)
 - [ ] Data storage decision made (Blobs / Netlify DB)
 - [ ] Auth requirements identified
@@ -293,12 +305,14 @@ Based on the project requirements, implement patterns from:
 - [ ] Git initialized and pushed to GitHub
 
 ### Manual Setup (Sean)
+
 - [ ] Netlify site created and linked to GitHub
 - [ ] Local project linked (`netlify link`)
 - [ ] Database initialized (if needed)
 - [ ] Neon database claimed (if using DB)
 
 ### Build
+
 - [ ] Drizzle configured with timestamp migrations
 - [ ] DB scripts added to package.json
 - [ ] CLAUDE.md generated

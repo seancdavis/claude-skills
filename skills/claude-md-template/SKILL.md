@@ -11,6 +11,7 @@ This skill provides the template for generating `CLAUDE.md` files in new project
 ## Template Structure
 
 The CLAUDE.md should be generated in the project root and customized based on:
+
 - Framework choice (Astro vs Vite + React)
 - Whether the project uses a database
 - Whether the project requires authentication
@@ -30,8 +31,8 @@ You are Sean's development partner on this project. Work collaboratively, make d
 - **Framework:** {FRAMEWORK}
 - **Styling:** Tailwind CSS v4
 - **Hosting:** Netlify
-{DATABASE_SECTION}
-{AUTH_SECTION}
+  {DATABASE_SECTION}
+  {AUTH_SECTION}
 
 ## Development
 
@@ -71,10 +72,13 @@ When working on specific areas, reference these skills:
 ```
 
 Dev commands:
+
 ```markdown
 \`\`\`bash
+
 # Start dev server (wraps Astro with Netlify environment)
-npm run dev  # runs: netlify dev --no-open
+
+npm run dev # runs: netlify dev --no-open
 \`\`\`
 ```
 
@@ -85,33 +89,43 @@ npm run dev  # runs: netlify dev --no-open
 ```
 
 Dev commands:
+
 ```markdown
 \`\`\`bash
+
 # Start dev server (Netlify Vite plugin injects environment)
-npm run dev  # runs: vite
+
+npm run dev # runs: vite
 \`\`\`
 ```
 
 ### Database Section
 
 When using Netlify DB:
+
 ```markdown
 - **Database:** Netlify DB (Neon) with Drizzle ORM
 ```
 
 DB commands:
+
 ```markdown
 \`\`\`bash
+
 # Generate migration after schema changes
+
 npm run db:generate
 
 # Run migrations (preview branch)
+
 npm run db:migrate
 
 # Run migrations (production - requires confirmation)
+
 npm run db:migrate:prod
 
 # Open Drizzle Studio
+
 npm run db:studio
 \`\`\`
 ```
@@ -119,6 +133,7 @@ npm run db:studio
 ### Auth Section
 
 When using Neon Auth:
+
 ```markdown
 - **Auth:** Neon Auth with Google OAuth
 ```
@@ -126,6 +141,7 @@ When using Neon Auth:
 ### Skills List by Project Type
 
 **Astro with Database and Auth:**
+
 ```markdown
 - `/skills/astro-best-practices` - Astro patterns and conventions
 - `/skills/auth-design` - Authentication implementation
@@ -139,6 +155,7 @@ When using Neon Auth:
 ```
 
 **Vite + React with Database and Auth:**
+
 ```markdown
 - `/skills/vite-best-practices` - Vite + React patterns
 - `/skills/auth-design` - Authentication implementation
@@ -173,23 +190,30 @@ You are Sean's development partner on this project. Work collaboratively, make d
 ### Local Development
 
 \`\`\`bash
+
 # Start dev server (wraps Astro with Netlify environment)
-npm run dev  # runs: netlify dev --no-open
+
+npm run dev # runs: netlify dev --no-open
 \`\`\`
 
 ### Database Commands
 
 \`\`\`bash
+
 # Generate migration after schema changes
+
 npm run db:generate
 
 # Run migrations (preview branch)
+
 npm run db:migrate
 
 # Run migrations (production - requires confirmation)
+
 npm run db:migrate:prod
 
 # Open Drizzle Studio
+
 npm run db:studio
 \`\`\`
 

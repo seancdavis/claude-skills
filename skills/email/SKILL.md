@@ -5,10 +5,6 @@ description: Transactional email patterns for Netlify-hosted applications using 
 
 # Email
 
-Transactional email patterns using Resend.
-
----
-
 ## Provider Choice
 
 **Recommended: Resend**
@@ -40,6 +36,7 @@ netlify env:set --secret RESEND_API_KEY "re_..."
 ### Configure Domain (Production)
 
 In Resend dashboard:
+
 1. Add your domain
 2. Add DNS records
 3. Verify domain
@@ -51,29 +48,21 @@ For development, use Resend's test mode or `onboarding@resend.dev`.
 ## Basic Email Sending
 
 ```typescript
-import { Resend } from "resend";
+import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendEmail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
+async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   const { data, error } = await resend.emails.send({
-    from: "App Name <notifications@yourdomain.com>",
+    from: 'App Name <notifications@yourdomain.com>',
     to,
     subject,
     html,
   });
 
   if (error) {
-    console.error("Email error:", error);
-    throw new Error("Failed to send email");
+    console.error('Email error:', error);
+    throw new Error('Failed to send email');
   }
 
   return data;
@@ -86,47 +75,47 @@ async function sendEmail({
 
 ```typescript
 // netlify/functions/send-notification.ts
-import type { Context, Config } from "@netlify/functions";
-import { Resend } from "resend";
-import { requireAuth } from "./_shared/auth";
+import type { Context, Config } from '@netlify/functions';
+import { Resend } from 'resend';
+import { requireAuth } from './_shared/auth';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async (request: Request, context: Context) => {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
   }
 
   const auth = await requireAuth(request);
   if (!auth.authenticated) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { recipientEmail, message } = await request.json();
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "App <notifications@yourdomain.com>",
+      from: 'App <notifications@yourdomain.com>',
       to: recipientEmail,
-      subject: "New Notification",
+      subject: 'New Notification',
       html: `<p>${message}</p>`,
     });
 
     if (error) {
-      console.error("Email error:", error);
-      return Response.json({ error: "Failed to send email" }, { status: 500 });
+      console.error('Email error:', error);
+      return Response.json({ error: 'Failed to send email' }, { status: 500 });
     }
 
     return Response.json({ success: true, id: data?.id });
   } catch (error) {
-    console.error("Email error:", error);
-    return Response.json({ error: "Failed to send email" }, { status: 500 });
+    console.error('Email error:', error);
+    return Response.json({ error: 'Failed to send email' }, { status: 500 });
   }
 };
 
 export const config: Config = {
-  path: "/api/send-notification",
-  method: "POST",
+  path: '/api/send-notification',
+  method: 'POST',
 };
 ```
 
@@ -136,27 +125,27 @@ export const config: Config = {
 
 ```typescript
 // src/pages/api/contact.ts
-import type { APIRoute } from "astro";
-import { Resend } from "resend";
-import { logger } from "../../lib/logger";
+import type { APIRoute } from 'astro';
+import { Resend } from 'resend';
+import { logger } from '../../lib/logger';
 
-const log = logger.scope("EMAIL");
+const log = logger.scope('EMAIL');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   const formData = await request.formData();
-  const name = formData.get("name")?.toString();
-  const email = formData.get("email")?.toString();
-  const message = formData.get("message")?.toString();
+  const name = formData.get('name')?.toString();
+  const email = formData.get('email')?.toString();
+  const message = formData.get('message')?.toString();
 
   if (!name || !email || !message) {
-    return redirect("/contact?message=validation_error", 302);
+    return redirect('/contact?message=validation_error', 302);
   }
 
   try {
     const { error } = await resend.emails.send({
-      from: "Contact Form <notifications@yourdomain.com>",
-      to: "you@example.com",
+      from: 'Contact Form <notifications@yourdomain.com>',
+      to: 'you@example.com',
       replyTo: email,
       subject: `Contact from ${name}`,
       html: `
@@ -169,15 +158,15 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     });
 
     if (error) {
-      log.error("Failed to send contact email:", error);
-      return redirect("/contact?message=email_failed", 302);
+      log.error('Failed to send contact email:', error);
+      return redirect('/contact?message=email_failed', 302);
     }
 
-    log.info("Contact email sent from:", email);
-    return redirect("/contact?message=email_sent", 302);
+    log.info('Contact email sent from:', email);
+    return redirect('/contact?message=email_sent', 302);
   } catch (error) {
-    log.error("Email error:", error);
-    return redirect("/contact?message=email_failed", 302);
+    log.error('Email error:', error);
+    return redirect('/contact?message=email_failed', 302);
   }
 };
 ```
@@ -229,12 +218,12 @@ function welcomeEmail(name: string): string {
 // src/lib/email-templates.ts
 export const templates = {
   welcome: (name: string) => ({
-    subject: "Welcome to App Name!",
+    subject: 'Welcome to App Name!',
     html: welcomeEmail(name),
   }),
 
   passwordReset: (resetUrl: string) => ({
-    subject: "Reset Your Password",
+    subject: 'Reset Your Password',
     html: `
       <p>Click the link below to reset your password:</p>
       <p><a href="${resetUrl}">${resetUrl}</a></p>
@@ -261,7 +250,7 @@ npm install @react-email/components react-email
 
 ```tsx
 // emails/welcome.tsx
-import { Html, Head, Body, Container, Text, Button } from "@react-email/components";
+import { Html, Head, Body, Container, Text, Button } from '@react-email/components';
 
 interface WelcomeEmailProps {
   name: string;
@@ -271,12 +260,10 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
   return (
     <Html>
       <Head />
-      <Body style={{ fontFamily: "sans-serif" }}>
+      <Body style={{ fontFamily: 'sans-serif' }}>
         <Container>
           <Text>Welcome, {name}!</Text>
-          <Button href="https://yourapp.com/dashboard">
-            Get Started
-          </Button>
+          <Button href="https://yourapp.com/dashboard">Get Started</Button>
         </Container>
       </Body>
     </Html>
@@ -285,10 +272,10 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
 ```
 
 ```typescript
-import { render } from "@react-email/render";
-import WelcomeEmail from "../emails/welcome";
+import { render } from '@react-email/render';
+import WelcomeEmail from '../emails/welcome';
 
-const html = await render(WelcomeEmail({ name: "John" }));
+const html = await render(WelcomeEmail({ name: 'John' }));
 ```
 
 ---
@@ -333,10 +320,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Will show in Resend dashboard but not actually send
 await resend.emails.send({
-  from: "onboarding@resend.dev", // Use Resend's test address
-  to: "test@example.com",
-  subject: "Test",
-  html: "<p>Test</p>",
+  from: 'onboarding@resend.dev', // Use Resend's test address
+  to: 'test@example.com',
+  subject: 'Test',
+  html: '<p>Test</p>',
 });
 ```
 

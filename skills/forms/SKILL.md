@@ -5,10 +5,6 @@ description: Form implementation patterns for both Astro and Vite + React projec
 
 # Forms
 
-Form implementation patterns across both frameworks.
-
----
-
 ## Two Patterns by Framework
 
 ### Astro SSR: Standard HTTP Forms
@@ -38,7 +34,7 @@ interface EntryFormProps {
   action?: string;
 }
 
-export function EntryForm({ entry, action = "/api/entries" }: EntryFormProps) {
+export function EntryForm({ entry, action = '/api/entries' }: EntryFormProps) {
   const isEdit = !!entry;
 
   return (
@@ -72,18 +68,12 @@ export function EntryForm({ entry, action = "/api/entries" }: EntryFormProps) {
 
       <div>
         <label>
-          <input
-            type="checkbox"
-            name="needsPower"
-            defaultChecked={entry?.needsPower}
-          />
+          <input type="checkbox" name="needsPower" defaultChecked={entry?.needsPower} />
           Needs power outlet
         </label>
       </div>
 
-      <button type="submit">
-        {isEdit ? "Update Entry" : "Create Entry"}
-      </button>
+      <button type="submit">{isEdit ? 'Update Entry' : 'Create Entry'}</button>
     </form>
   );
 }
@@ -93,32 +83,32 @@ export function EntryForm({ entry, action = "/api/entries" }: EntryFormProps) {
 
 ```typescript
 // src/pages/api/entries.ts
-import type { APIRoute } from "astro";
-import { getUserWithApproval } from "../../lib/auth";
-import { createEntry, updateEntry, deleteEntry } from "../../lib/entries";
-import { logger } from "../../lib/logger";
+import type { APIRoute } from 'astro';
+import { getUserWithApproval } from '../../lib/auth';
+import { createEntry, updateEntry, deleteEntry } from '../../lib/entries';
+import { logger } from '../../lib/logger';
 
-const log = logger.scope("ENTRIES");
+const log = logger.scope('ENTRIES');
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   // Auth check
   const auth = await getUserWithApproval(request);
   if (!auth) {
-    return redirect("/login?message=auth_error", 302);
+    return redirect('/login?message=auth_error', 302);
   }
   if (!auth.isApproved) {
-    return redirect("/unauthorized?message=unauthorized", 302);
+    return redirect('/unauthorized?message=unauthorized', 302);
   }
 
   // Parse form data
   const formData = await request.formData();
-  const method = formData.get("_method")?.toString() || "POST";
+  const method = formData.get('_method')?.toString() || 'POST';
 
   // Route to appropriate handler
-  if (method === "DELETE") {
+  if (method === 'DELETE') {
     return handleDelete(formData, auth.user.email, redirect);
   }
-  if (method === "PUT") {
+  if (method === 'PUT') {
     return handleUpdate(formData, auth.user.email, redirect);
   }
   return handleCreate(formData, auth.user, redirect);
@@ -127,16 +117,16 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 async function handleCreate(
   formData: FormData,
   user: { email: string; name: string | null },
-  redirect: (path: string, status?: number) => Response
+  redirect: (path: string, status?: number) => Response,
 ) {
-  const title = formData.get("title")?.toString().trim();
-  const description = formData.get("description")?.toString().trim();
-  const needsPower = formData.get("needsPower") === "on";
+  const title = formData.get('title')?.toString().trim();
+  const description = formData.get('description')?.toString().trim();
+  const needsPower = formData.get('needsPower') === 'on';
 
   // Validation
   if (!title || !description) {
-    log.warn("Missing required fields");
-    return redirect("/my-entry?message=validation_error", 302);
+    log.warn('Missing required fields');
+    return redirect('/my-entry?message=validation_error', 302);
   }
 
   try {
@@ -147,56 +137,56 @@ async function handleCreate(
       userEmail: user.email,
       userName: user.name,
     });
-    log.info("Entry created for:", user.email);
-    return redirect("/my-entry?message=entry_created", 302);
+    log.info('Entry created for:', user.email);
+    return redirect('/my-entry?message=entry_created', 302);
   } catch (error) {
-    log.error("Failed to create entry:", error);
-    return redirect("/my-entry?message=create_failed", 302);
+    log.error('Failed to create entry:', error);
+    return redirect('/my-entry?message=create_failed', 302);
   }
 }
 
 async function handleUpdate(
   formData: FormData,
   userEmail: string,
-  redirect: (path: string, status?: number) => Response
+  redirect: (path: string, status?: number) => Response,
 ) {
-  const id = parseInt(formData.get("id")?.toString() || "0", 10);
-  const title = formData.get("title")?.toString().trim();
-  const description = formData.get("description")?.toString().trim();
-  const needsPower = formData.get("needsPower") === "on";
+  const id = parseInt(formData.get('id')?.toString() || '0', 10);
+  const title = formData.get('title')?.toString().trim();
+  const description = formData.get('description')?.toString().trim();
+  const needsPower = formData.get('needsPower') === 'on';
 
   if (!id || !title || !description) {
-    return redirect("/my-entry/edit?message=validation_error", 302);
+    return redirect('/my-entry/edit?message=validation_error', 302);
   }
 
   try {
     await updateEntry(id, userEmail, { title, description, needsPower });
-    log.info("Entry updated for:", userEmail);
-    return redirect("/my-entry?message=entry_updated", 302);
+    log.info('Entry updated for:', userEmail);
+    return redirect('/my-entry?message=entry_updated', 302);
   } catch (error) {
-    log.error("Failed to update entry:", error);
-    return redirect("/my-entry/edit?message=update_failed", 302);
+    log.error('Failed to update entry:', error);
+    return redirect('/my-entry/edit?message=update_failed', 302);
   }
 }
 
 async function handleDelete(
   formData: FormData,
   userEmail: string,
-  redirect: (path: string, status?: number) => Response
+  redirect: (path: string, status?: number) => Response,
 ) {
-  const id = parseInt(formData.get("id")?.toString() || "0", 10);
+  const id = parseInt(formData.get('id')?.toString() || '0', 10);
 
   if (!id) {
-    return redirect("/my-entry?message=validation_error", 302);
+    return redirect('/my-entry?message=validation_error', 302);
   }
 
   try {
     await deleteEntry(id, userEmail);
-    log.info("Entry deleted for:", userEmail);
-    return redirect("/?message=entry_deleted", 302);
+    log.info('Entry deleted for:', userEmail);
+    return redirect('/?message=entry_deleted', 302);
   } catch (error) {
-    log.error("Failed to delete entry:", error);
-    return redirect("/my-entry?message=delete_failed", 302);
+    log.error('Failed to delete entry:', error);
+    return redirect('/my-entry?message=delete_failed', 302);
   }
 }
 ```
@@ -221,9 +211,9 @@ async function handleDelete(
 
 ```tsx
 // src/components/ItemForm.tsx
-import { useState } from "react";
-import { useToast } from "./Toast";
-import { api } from "../lib/api";
+import { useState } from 'react';
+import { useToast } from './Toast';
+import { api } from '../lib/api';
 
 interface ItemFormProps {
   item?: Item;
@@ -245,15 +235,15 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      title: formData.get("title")?.toString().trim(),
-      description: formData.get("description")?.toString().trim(),
-      priority: formData.get("priority")?.toString(),
+      title: formData.get('title')?.toString().trim(),
+      description: formData.get('description')?.toString().trim(),
+      priority: formData.get('priority')?.toString(),
     };
 
     // Client-side validation
     const validationErrors: Record<string, string> = {};
-    if (!data.title) validationErrors.title = "Title is required";
-    if (!data.description) validationErrors.description = "Description is required";
+    if (!data.title) validationErrors.title = 'Title is required';
+    if (!data.description) validationErrors.description = 'Description is required';
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -264,15 +254,15 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
     try {
       if (isEdit) {
         await api.put(`/items/${item.id}`, data);
-        showToast("success", "Item updated successfully");
+        showToast('success', 'Item updated successfully');
       } else {
-        await api.post("/items", data);
-        showToast("success", "Item created successfully");
+        await api.post('/items', data);
+        showToast('success', 'Item created successfully');
       }
       onSuccess();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Operation failed";
-      showToast("error", message);
+      const message = error instanceof Error ? error.message : 'Operation failed';
+      showToast('error', message);
     } finally {
       setSubmitting(false);
     }
@@ -291,9 +281,7 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
           defaultValue={item?.title}
           className="mt-1 block w-full rounded border p-2"
         />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-500">{errors.title}</p>
-        )}
+        {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
       </div>
 
       <div>
@@ -307,9 +295,7 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
           rows={4}
           className="mt-1 block w-full rounded border p-2"
         />
-        {errors.description && (
-          <p className="mt-1 text-sm text-red-500">{errors.description}</p>
-        )}
+        {errors.description && <p className="mt-1 text-sm text-red-500">{errors.description}</p>}
       </div>
 
       <div>
@@ -319,7 +305,7 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
         <select
           id="priority"
           name="priority"
-          defaultValue={item?.priority || "medium"}
+          defaultValue={item?.priority || 'medium'}
           className="mt-1 block w-full rounded border p-2"
         >
           <option value="low">Low</option>
@@ -334,14 +320,10 @@ export function ItemForm({ item, onSuccess, onCancel }: ItemFormProps) {
           disabled={submitting}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
         >
-          {submitting ? "Saving..." : isEdit ? "Update" : "Create"}
+          {submitting ? 'Saving...' : isEdit ? 'Update' : 'Create'}
         </button>
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 border rounded"
-          >
+          <button type="button" onClick={onCancel} className="px-4 py-2 border rounded">
             Cancel
           </button>
         )}
@@ -359,27 +341,23 @@ function DeleteButton({ itemId, onSuccess }: { itemId: number; onSuccess: () => 
   const { showToast } = useToast();
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+    if (!confirm('Are you sure you want to delete this item?')) return;
 
     setDeleting(true);
     try {
       await api.delete(`/items/${itemId}`);
-      showToast("success", "Item deleted");
+      showToast('success', 'Item deleted');
       onSuccess();
     } catch (error) {
-      showToast("error", "Failed to delete item");
+      showToast('error', 'Failed to delete item');
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={deleting}
-      className="text-red-500 disabled:opacity-50"
-    >
-      {deleting ? "Deleting..." : "Delete"}
+    <button onClick={handleDelete} disabled={deleting} className="text-red-500 disabled:opacity-50">
+      {deleting ? 'Deleting...' : 'Delete'}
     </button>
   );
 }
@@ -410,18 +388,18 @@ const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   const formData = new FormData(e.currentTarget);
 
-  const response = await fetch("/api/upload", {
-    method: "POST",
+  const response = await fetch('/api/upload', {
+    method: 'POST',
     body: formData, // Don't set Content-Type; browser sets it with boundary
   });
 
   if (!response.ok) {
     const error = await response.json();
-    showToast("error", error.message);
+    showToast('error', error.message);
     return;
   }
 
-  showToast("success", "File uploaded");
+  showToast('success', 'File uploaded');
 };
 ```
 
@@ -435,15 +413,15 @@ const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
 const validationErrors: Record<string, string> = {};
 
 if (!data.title) {
-  validationErrors.title = "Title is required";
+  validationErrors.title = 'Title is required';
 } else if (data.title.length > 255) {
-  validationErrors.title = "Title must be less than 255 characters";
+  validationErrors.title = 'Title must be less than 255 characters';
 }
 
 if (!data.email) {
-  validationErrors.email = "Email is required";
+  validationErrors.email = 'Email is required';
 } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-  validationErrors.email = "Invalid email format";
+  validationErrors.email = 'Invalid email format';
 }
 ```
 
@@ -451,12 +429,12 @@ if (!data.email) {
 
 ```typescript
 // Never trust client validation
-const title = formData.get("title")?.toString().trim();
+const title = formData.get('title')?.toString().trim();
 if (!title) {
-  return redirect("/form?message=validation_error", 302);
+  return redirect('/form?message=validation_error', 302);
 }
 if (title.length > 255) {
-  return redirect("/form?message=title_too_long", 302);
+  return redirect('/form?message=title_too_long', 302);
 }
 ```
 
@@ -480,7 +458,7 @@ export function Input({ label, error, id, ...props }: InputProps) {
       <input
         id={id}
         className={`mt-1 block w-full rounded border p-2 ${
-          error ? "border-red-500" : "border-gray-300"
+          error ? 'border-red-500' : 'border-gray-300'
         }`}
         {...props}
       />

@@ -5,10 +5,6 @@ description: Conventions and patterns for Vite + React projects deployed to Netl
 
 # Vite + React Best Practices
 
-Conventions and patterns for building Vite + React applications deployed to Netlify.
-
----
-
 ## Core Principles
 
 1. **TypeScript always** - No exceptions
@@ -23,17 +19,18 @@ Conventions and patterns for building Vite + React applications deployed to Netl
 ### vite.config.ts
 
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import netlify from '@netlify/vite-plugin'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import netlify from '@netlify/vite-plugin';
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), netlify()],
-})
+});
 ```
 
 The Netlify Vite plugin:
+
 - Injects Netlify environment variables into `npm run dev`
 - Provides access to Netlify Blobs, DB, and other services locally
 - No need for `netlify dev` wrapper
@@ -70,12 +67,12 @@ The Netlify Vite plugin:
 ### App.tsx Structure
 
 ```tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "./components/Layout";
-import { AdminLayout } from "./components/AdminLayout";
-import { HomePage } from "./pages/HomePage";
-import { ItemPage } from "./pages/ItemPage";
-import { AdminPage } from "./pages/admin/AdminPage";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { AdminLayout } from './components/AdminLayout';
+import { HomePage } from './pages/HomePage';
+import { ItemPage } from './pages/ItemPage';
+import { AdminPage } from './pages/admin/AdminPage';
 
 function App() {
   return (
@@ -153,9 +150,7 @@ function KanbanBoard() {
         {columns === null ? (
           <ColumnsSkeleton count={3} />
         ) : (
-          columns.map(col => (
-            <KanbanColumn key={col.id} column={col} />
-          ))
+          columns.map((col) => <KanbanColumn key={col.id} column={col} />)
         )}
       </div>
     </div>
@@ -182,7 +177,7 @@ function KanbanColumn({ column }: { column: Column }) {
       {items === null ? (
         <ItemsSkeleton count={5} />
       ) : (
-        items.map(item => <KanbanItem key={item.id} item={item} />)
+        items.map((item) => <KanbanItem key={item.id} item={item} />)
       )}
     </div>
   );
@@ -193,10 +188,12 @@ function KanbanColumn({ column }: { column: Column }) {
 
 ```tsx
 // src/components/LoadingSpinner.tsx
-export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "w-4 h-4", md: "w-8 h-8", lg: "w-12 h-12" };
+export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const sizes = { sm: 'w-4 h-4', md: 'w-8 h-8', lg: 'w-12 h-12' };
   return (
-    <div className={`animate-spin ${sizes[size]} border-2 border-current border-t-transparent rounded-full`} />
+    <div
+      className={`animate-spin ${sizes[size]} border-2 border-current border-t-transparent rounded-full`}
+    />
   );
 }
 
@@ -233,20 +230,20 @@ export function ColumnsSkeleton({ count }: { count: number }) {
 
 ```typescript
 // src/lib/api.ts
-const API_BASE = "/api";
+const API_BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options?.headers,
     },
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(error.error || "Request failed");
+    const error = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(error.error || 'Request failed');
   }
 
   return response.json();
@@ -255,11 +252,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data: unknown) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(data) }),
+    request<T>(path, { method: 'POST', body: JSON.stringify(data) }),
   put: <T>(path: string, data: unknown) =>
-    request<T>(path, { method: "PUT", body: JSON.stringify(data) }),
-  delete: <T>(path: string) =>
-    request<T>(path, { method: "DELETE" }),
+    request<T>(path, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
 ```
 
@@ -267,8 +263,8 @@ export const api = {
 
 ```typescript
 // src/hooks/useItems.ts
-import { useState, useEffect } from "react";
-import { api } from "../lib/api";
+import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 export function useItems() {
   const [items, setItems] = useState<Item[] | null>(null);
@@ -276,17 +272,19 @@ export function useItems() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<Item[]>("/items")
+    api
+      .get<Item[]>('/items')
       .then(setItems)
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
   const refetch = () => {
     setLoading(true);
-    api.get<Item[]>("/items")
+    api
+      .get<Item[]>('/items')
       .then(setItems)
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
@@ -313,18 +311,18 @@ function CreateItemForm({ onSuccess }: { onSuccess: () => void }) {
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      title: formData.get("title"),
-      description: formData.get("description"),
+      title: formData.get('title'),
+      description: formData.get('description'),
     };
 
     try {
-      await api.post("/items", data);
-      showToast("success", "Item created successfully");
+      await api.post('/items', data);
+      showToast('success', 'Item created successfully');
       onSuccess();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to create item";
+      const message = err instanceof Error ? err.message : 'Failed to create item';
       setError(message);
-      showToast("error", message);
+      showToast('error', message);
     } finally {
       setSubmitting(false);
     }
@@ -336,7 +334,7 @@ function CreateItemForm({ onSuccess }: { onSuccess: () => void }) {
       <TextArea name="description" label="Description" />
       {error && <p className="text-danger">{error}</p>}
       <Button type="submit" disabled={submitting}>
-        {submitting ? "Creating..." : "Create Item"}
+        {submitting ? 'Creating...' : 'Create Item'}
       </Button>
     </form>
   );

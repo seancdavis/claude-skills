@@ -5,15 +5,12 @@ description: Database and data storage conventions for Netlify projects using Ne
 
 # Data Storage
 
-Database and data storage conventions using Netlify DB (Neon) with Drizzle ORM.
-
----
-
 ## Decision Framework
 
 ### Netlify Blobs
 
 Use when:
+
 - Storing files (images, documents, etc.)
 - A handful of records with no growth expectation
 - No relational data needs
@@ -22,6 +19,7 @@ Use when:
 ### Netlify DB (Neon)
 
 Use when:
+
 - Storing structured data
 - Data will grow over time
 - Need queries, filtering, relationships
@@ -61,13 +59,13 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NETLIFY_DATABASE_URL!
+    url: process.env.NETLIFY_DATABASE_URL!,
   },
   schema: './db/schema.ts',
   out: './migrations',
   migrations: {
-    prefix: 'timestamp'  // Use Unix timestamps, not sequential numbers
-  }
+    prefix: 'timestamp', // Use Unix timestamps, not sequential numbers
+  },
 });
 ```
 
@@ -96,22 +94,15 @@ export * from './schema';
 
 ```typescript
 // db/schema.ts
-import {
-  integer,
-  pgTable,
-  varchar,
-  text,
-  boolean,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, text, boolean, timestamp } from 'drizzle-orm/pg-core';
 
-export const items = pgTable("items", {
+export const items = pgTable('items', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   title: varchar({ length: 255 }).notNull(),
   description: text(),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 // Type inference
@@ -122,17 +113,17 @@ export type NewItem = typeof items.$inferInsert;
 ### Table with Relations
 
 ```typescript
-export const posts = pgTable("posts", {
+export const posts = pgTable('posts', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   title: varchar({ length: 255 }).notNull(),
   content: text(),
-  authorId: integer("author_id")
+  authorId: integer('author_id')
     .notNull()
     .references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const users = pgTable("users", {
+export const users = pgTable('users', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   email: varchar({ length: 255 }).notNull().unique(),
   name: varchar({ length: 255 }),
@@ -142,21 +133,19 @@ export const users = pgTable("users", {
 ### Table with Unique Index
 
 ```typescript
-import { uniqueIndex } from "drizzle-orm/pg-core";
+import { uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const gameAccess = pgTable(
-  "game_access",
+  'game_access',
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    gameId: integer("game_id")
+    gameId: integer('game_id')
       .notNull()
       .references(() => games.id),
-    userEmail: varchar("user_email", { length: 255 }).notNull(),
-    role: varchar({ length: 20 }).notNull().default("player"),
+    userEmail: varchar('user_email', { length: 255 }).notNull(),
+    role: varchar({ length: 20 }).notNull().default('player'),
   },
-  (table) => [
-    uniqueIndex("game_access_game_user_idx").on(table.gameId, table.userEmail),
-  ]
+  (table) => [uniqueIndex('game_access_game_user_idx').on(table.gameId, table.userEmail)],
 );
 ```
 
@@ -178,13 +167,13 @@ export const gameAccess = pgTable(
 
 ### Script Purposes
 
-| Script | Purpose |
-|--------|---------|
-| `db:generate` | Generate migration files after schema changes |
-| `db:migrate` | Run migrations on preview/dev branch |
-| `db:migrate:prod` | Run migrations on production (with confirmation) |
-| `db:push` | Push schema directly (dev only, no migration files) |
-| `db:studio` | Open Drizzle Studio for database browsing |
+| Script            | Purpose                                             |
+| ----------------- | --------------------------------------------------- |
+| `db:generate`     | Generate migration files after schema changes       |
+| `db:migrate`      | Run migrations on preview/dev branch                |
+| `db:migrate:prod` | Run migrations on production (with confirmation)    |
+| `db:push`         | Push schema directly (dev only, no migration files) |
+| `db:studio`       | Open Drizzle Studio for database browsing           |
 
 ### Production Migration Script
 
@@ -195,7 +184,7 @@ import readline from 'readline';
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 console.log('\n⚠️  PRODUCTION DATABASE MIGRATION\n');
@@ -220,33 +209,23 @@ rl.question('Type the project name to confirm: ', (answer) => {
 ### Basic Queries
 
 ```typescript
-import { db, items } from "../db";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { db, items } from '../db';
+import { eq, desc, and, gte } from 'drizzle-orm';
 
 // Select all
 const allItems = await db.select().from(items);
 
 // Select with filter
-const activeItems = await db
-  .select()
-  .from(items)
-  .where(eq(items.isActive, true));
+const activeItems = await db.select().from(items).where(eq(items.isActive, true));
 
 // Select single by ID
-const [item] = await db
-  .select()
-  .from(items)
-  .where(eq(items.id, itemId))
-  .limit(1);
+const [item] = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
 
 // Select with multiple conditions
 const recentActiveItems = await db
   .select()
   .from(items)
-  .where(and(
-    eq(items.isActive, true),
-    gte(items.createdAt, new Date('2024-01-01'))
-  ))
+  .where(and(eq(items.isActive, true), gte(items.createdAt, new Date('2024-01-01'))))
   .orderBy(desc(items.createdAt));
 ```
 
@@ -257,16 +236,13 @@ const recentActiveItems = await db
 const [newItem] = await db
   .insert(items)
   .values({
-    title: "New Item",
-    description: "Description here",
+    title: 'New Item',
+    description: 'Description here',
   })
   .returning();
 
 // Insert multiple
-await db.insert(items).values([
-  { title: "Item 1" },
-  { title: "Item 2" },
-]);
+await db.insert(items).values([{ title: 'Item 1' }, { title: 'Item 2' }]);
 ```
 
 ### Update
@@ -275,7 +251,7 @@ await db.insert(items).values([
 const [updatedItem] = await db
   .update(items)
   .set({
-    title: "Updated Title",
+    title: 'Updated Title',
     updatedAt: new Date(),
   })
   .where(eq(items.id, itemId))
@@ -285,9 +261,7 @@ const [updatedItem] = await db
 ### Delete
 
 ```typescript
-await db
-  .delete(items)
-  .where(eq(items.id, itemId));
+await db.delete(items).where(eq(items.id, itemId));
 ```
 
 ---

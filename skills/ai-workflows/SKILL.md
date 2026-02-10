@@ -5,10 +5,6 @@ description: Integrating AI capabilities via Netlify's AI Gateway and Agent Runn
 
 # AI Workflows
 
-Integrating AI capabilities via Netlify's AI services.
-
----
-
 ## Two Services
 
 ### AI Gateway
@@ -52,7 +48,7 @@ NETLIFY_AI_GATEWAY_BASE_URL
 
 ```typescript
 if (!process.env.OPENAI_BASE_URL) {
-  throw new Error("AI Gateway not available. Run with netlify dev or deploy to Netlify.");
+  throw new Error('AI Gateway not available. Run with netlify dev or deploy to Netlify.');
 }
 ```
 
@@ -69,16 +65,16 @@ npm install openai
 ### Basic Usage
 
 ```typescript
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
 const client = new OpenAI();
 // Automatically uses OPENAI_API_KEY and OPENAI_BASE_URL from environment
 
 const response = await client.chat.completions.create({
-  model: "gpt-4o-mini",
+  model: 'gpt-4o-mini',
   messages: [
-    { role: "system", content: "You are a helpful assistant." },
-    { role: "user", content: "Explain recursion in one sentence." },
+    { role: 'system', content: 'You are a helpful assistant.' },
+    { role: 'user', content: 'Explain recursion in one sentence.' },
   ],
 });
 
@@ -89,13 +85,13 @@ const answer = response.choices[0].message.content;
 
 ```typescript
 const stream = await client.chat.completions.create({
-  model: "gpt-4o-mini",
-  messages: [{ role: "user", content: "Write a haiku about coding." }],
+  model: 'gpt-4o-mini',
+  messages: [{ role: 'user', content: 'Write a haiku about coding.' }],
   stream: true,
 });
 
 for await (const chunk of stream) {
-  const content = chunk.choices[0]?.delta?.content || "";
+  const content = chunk.choices[0]?.delta?.content || '';
   process.stdout.write(content);
 }
 ```
@@ -113,34 +109,28 @@ npm install @anthropic-ai/sdk
 ### Basic Usage
 
 ```typescript
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 // Automatically uses ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL from environment
 
 const response = await client.messages.create({
-  model: "claude-sonnet-4-5-20250929",
+  model: 'claude-sonnet-4-5-20250929',
   max_tokens: 1024,
-  messages: [
-    { role: "user", content: "Explain the builder pattern in TypeScript." },
-  ],
+  messages: [{ role: 'user', content: 'Explain the builder pattern in TypeScript.' }],
 });
 
-const answer = response.content[0].type === "text"
-  ? response.content[0].text
-  : "";
+const answer = response.content[0].type === 'text' ? response.content[0].text : '';
 ```
 
 ### With System Prompt
 
 ```typescript
 const response = await client.messages.create({
-  model: "claude-sonnet-4-5-20250929",
+  model: 'claude-sonnet-4-5-20250929',
   max_tokens: 1024,
-  system: "You are a senior TypeScript developer. Be concise.",
-  messages: [
-    { role: "user", content: "Review this code for issues: ..." },
-  ],
+  system: 'You are a senior TypeScript developer. Be concise.',
+  messages: [{ role: 'user', content: 'Review this code for issues: ...' }],
 });
 ```
 
@@ -150,48 +140,46 @@ const response = await client.messages.create({
 
 ```typescript
 // netlify/functions/ai-summarize.ts
-import type { Context, Config } from "@netlify/functions";
-import Anthropic from "@anthropic-ai/sdk";
+import type { Context, Config } from '@netlify/functions';
+import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
 export default async (request: Request, context: Context) => {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
   }
 
   const { text } = await request.json();
 
-  if (!text || typeof text !== "string") {
-    return Response.json({ error: "Text is required" }, { status: 400 });
+  if (!text || typeof text !== 'string') {
+    return Response.json({ error: 'Text is required' }, { status: 400 });
   }
 
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 256,
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: `Summarize this text in 2-3 sentences:\n\n${text}`,
         },
       ],
     });
 
-    const summary = response.content[0].type === "text"
-      ? response.content[0].text
-      : "";
+    const summary = response.content[0].type === 'text' ? response.content[0].text : '';
 
     return Response.json({ summary });
   } catch (error) {
-    console.error("AI error:", error);
-    return Response.json({ error: "AI processing failed" }, { status: 500 });
+    console.error('AI error:', error);
+    return Response.json({ error: 'AI processing failed' }, { status: 500 });
   }
 };
 
 export const config: Config = {
-  path: "/api/summarize",
-  method: "POST",
+  path: '/api/summarize',
+  method: 'POST',
 };
 ```
 
@@ -203,25 +191,25 @@ export const config: Config = {
 
 Access 30+ models including:
 
-| Provider | Models |
-|----------|--------|
+| Provider  | Models                                                                          |
+| --------- | ------------------------------------------------------------------------------- |
 | Anthropic | claude-opus-4-5-20251101, claude-sonnet-4-5-20250929, claude-haiku-4-5-20251001 |
-| OpenAI | gpt-4o, gpt-4o-mini, gpt-5-mini |
-| Google | gemini-2.5-pro, gemini-2.0-flash |
+| OpenAI    | gpt-4o, gpt-4o-mini, gpt-5-mini                                                 |
+| Google    | gemini-2.5-pro, gemini-2.0-flash                                                |
 
 ### Model Selection
 
 ```typescript
 // Cost-effective for simple tasks
-model: "gpt-4o-mini"
-model: "claude-haiku-4-5-20251001"
+model: 'gpt-4o-mini';
+model: 'claude-haiku-4-5-20251001';
 
 // More capable for complex reasoning
-model: "claude-sonnet-4-5-20250929"
-model: "gpt-4o"
+model: 'claude-sonnet-4-5-20250929';
+model: 'gpt-4o';
 
 // Most capable
-model: "claude-opus-4-5-20251101"
+model: 'claude-opus-4-5-20251101';
 ```
 
 ---
@@ -230,47 +218,45 @@ model: "claude-opus-4-5-20251101"
 
 ```typescript
 // src/pages/api/ai/cleanup.ts
-import type { APIRoute } from "astro";
-import Anthropic from "@anthropic-ai/sdk";
-import { getUserWithApproval } from "../../../lib/auth";
+import type { APIRoute } from 'astro';
+import Anthropic from '@anthropic-ai/sdk';
+import { getUserWithApproval } from '../../../lib/auth';
 
 const client = new Anthropic();
 
 export const POST: APIRoute = async ({ request, redirect }) => {
   const auth = await getUserWithApproval(request);
   if (!auth?.isAdmin) {
-    return redirect("/unauthorized", 302);
+    return redirect('/unauthorized', 302);
   }
 
   const formData = await request.formData();
-  const text = formData.get("text")?.toString();
+  const text = formData.get('text')?.toString();
 
   if (!text) {
-    return redirect("/?message=validation_error", 302);
+    return redirect('/?message=validation_error', 302);
   }
 
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 1024,
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: `Clean up this text, fixing grammar and formatting:\n\n${text}`,
         },
       ],
     });
 
-    const cleaned = response.content[0].type === "text"
-      ? response.content[0].text
-      : text;
+    const cleaned = response.content[0].type === 'text' ? response.content[0].text : text;
 
     // Store result and redirect
     await saveCleanedText(cleaned);
-    return redirect("/?message=ai_cleanup_complete", 302);
+    return redirect('/?message=ai_cleanup_complete', 302);
   } catch (error) {
-    console.error("AI cleanup error:", error);
-    return redirect("/?message=ai_error", 302);
+    console.error('AI cleanup error:', error);
+    return redirect('/?message=ai_error', 302);
   }
 };
 ```
