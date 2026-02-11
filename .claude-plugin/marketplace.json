@@ -1,6 +1,9 @@
 {
   "name": "seancdavis-skills-marketplace",
   "description": "Sean's web development skills for Claude Code",
+  "owner": {
+    "name": "Sean C Davis"
+  },
   "plugins": [
     {
       "name": "seancdavis-skills",
