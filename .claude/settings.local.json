@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "WebSearch",
+      "Bash(git commit:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:neon.com)",
+      "WebFetch(domain:docs.astro.build)",
+      "Bash(claude /plugin install:*)",
+      "Bash(wc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(claude:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
