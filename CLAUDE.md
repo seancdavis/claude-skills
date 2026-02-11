@@ -133,7 +133,9 @@ description: Comprehensive description - this determines when Claude invokes the
 
 - Keep SKILL.md under 500 lines
 - Move detailed reference material to `references/` directory
-- Description must include all trigger conditions
+- Description must include all trigger conditions (not the body)
+- Avoid redundant intro paragraphs that repeat the description
+- Start body with first actionable section, not overview text
 
 ## Development Workflow
 
