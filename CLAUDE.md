@@ -56,6 +56,7 @@ Claude will also automatically invoke skills based on context.
 |-------|-------------|
 | `claude-md-template` | Template for generating CLAUDE.md in new projects |
 | `new-project` | Scaffolds new Astro or Vite+React projects |
+| `onboard-existing-project` | Integrates skills into existing projects, audits CLAUDE.md for conflicts |
 
 ### Frameworks
 | Skill | Description |
