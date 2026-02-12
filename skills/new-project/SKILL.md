@@ -51,27 +51,39 @@ Before writing any code, gather requirements and make architectural decisions.
 
 ### Step 1: Scaffold the Project
 
-**For Astro:**
+**If the project directory only contains `.claude/` folder** (skills installed before scaffolding):
 
 ```bash
-# Create new Astro project
-npm create astro@latest {project-name} -- --template minimal --typescript strict
-
-cd {project-name}
-
-# Add integrations
+# Scaffold to temp directory, then copy files over
+# For Astro:
+npm create astro@latest ../temp-scaffold -- --template minimal --typescript strict --no-install --no-git
+cp -r ../temp-scaffold/* .
+cp ../temp-scaffold/.gitignore . 2>/dev/null || true
+rm -rf ../temp-scaffold
+npm install
 npx astro add netlify react tailwind
+
+# For Vite + React:
+npm create vite@latest ../temp-scaffold -- --template react-ts
+cp -r ../temp-scaffold/* .
+cp ../temp-scaffold/.gitignore . 2>/dev/null || true
+rm -rf ../temp-scaffold
+npm install
+npm install react-router-dom
+npm install -D @netlify/vite-plugin @netlify/functions @tailwindcss/vite tailwindcss
 ```
 
-**For Vite + React:**
+**If starting fresh from parent directory:**
 
 ```bash
-# Create new Vite project
-npm create vite@latest {project-name} -- --template react-ts
-
+# For Astro:
+npm create astro@latest {project-name} -- --template minimal --typescript strict
 cd {project-name}
+npx astro add netlify react tailwind
 
-# Install dependencies
+# For Vite + React:
+npm create vite@latest {project-name} -- --template react-ts
+cd {project-name}
 npm install react-router-dom
 npm install -D @netlify/vite-plugin @netlify/functions @tailwindcss/vite tailwindcss
 ```
