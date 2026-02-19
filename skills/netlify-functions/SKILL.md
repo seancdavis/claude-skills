@@ -35,6 +35,13 @@ export const handler = async (event, context) => { ... };
 
 // ❌ WRONG: Express-style response
 return res.status(200).json({ data });
+
+// ❌ WRONG: Manual URL path parsing for route params
+const pathParts = url.pathname.split("/");
+const id = pathParts[pathParts.length - 1];
+
+// ✅ RIGHT: Use context.params (matches path config)
+const { id } = context.params;
 ```
 
 ---
