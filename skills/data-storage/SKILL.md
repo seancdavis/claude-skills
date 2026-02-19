@@ -288,8 +288,9 @@ Netlify DB supports branching:
 - **Writing raw SQL** - Always use Drizzle ORM
 - **Sequential migration numbers** - Use timestamp prefix to avoid conflicts
 - **Editing migration files directly** - Generate new migrations instead
-- **Running `db:push` in production** - Use migrations for tracking
+- **Using `db:push` for schema changes** - Never use `db:push` — always use `db:generate` + `db:migrate` for all schema changes, including development. `db:push` bypasses migration tracking, which leads to orphaned migration files that can't be applied and creates mismatches between the migration history and the actual database state. The only exception is initial project scaffolding before the first migration exists.
 - **Storing files in database** - Use Netlify Blobs for files
+- **Returning other users' data** - Scope user-owned data at the query level. If a table has a `userId` column (or equivalent foreign key to a users table), every SELECT, UPDATE, and DELETE query on that table must include a `WHERE userId = ?` condition for the authenticated user. Never return another user's data by omitting this filter. This applies to both direct queries and sub-resource lookups (e.g., if fetching sessions for a run, verify the run belongs to the user first).
 
 ---
 

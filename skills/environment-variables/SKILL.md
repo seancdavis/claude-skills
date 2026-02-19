@@ -58,12 +58,17 @@ netlify env:get VARIABLE_NAME
 
 ### Set Variables
 
+Set env vars for all contexts by default — omit the `--context` flag unless there's a specific reason to scope a variable to a single context. Scoping to individual contexts (e.g., only production) means the variable won't be available in deploy previews or local development, which causes hard-to-debug failures.
+
 ```bash
-# Set a non-secret variable (visible in logs)
+# Good: available in all contexts
 netlify env:set VARIABLE_NAME "value"
 
 # Set a secret variable (hidden from logs)
 netlify env:set --secret API_KEY "sk_..."
+
+# Only when you have a specific reason:
+netlify env:set --context production API_URL "https://api.prod.com"
 ```
 
 ### Unset Variables

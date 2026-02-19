@@ -452,6 +452,27 @@ export async function requireAuth(req: Request): Promise<AuthResult> {
 
 ---
 
+## Data Scoping
+
+Authentication alone doesn't protect user data — queries must also be scoped. If content is specific to a user (runs they created, notes they wrote, keys they own), every query that reads or modifies that content must filter by the authenticated user's ID. Return 404 (not 403) when a resource exists but doesn't belong to the requesting user, to avoid leaking information about other users' data.
+
+For sub-resources (e.g., sessions belonging to a run), verify ownership of the parent resource rather than adding a userId to every child table.
+
+```typescript
+// Good: ownership check built into the query
+const [run] = await db.select().from(runs)
+  .where(and(eq(runs.id, runId), eq(runs.userId, auth.userId)));
+if (!run) {
+  return Response.json({ error: "Run not found" }, { status: 404 });
+}
+
+// Bad: fetching without ownership check
+const [run] = await db.select().from(runs)
+  .where(eq(runs.id, runId));
+```
+
+---
+
 ## Cookie Handling (Safari/Localhost)
 
 Neon Auth cookies may need adjustments for Safari ITP and localhost:
