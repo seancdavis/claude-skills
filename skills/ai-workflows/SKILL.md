@@ -37,6 +37,10 @@ OPENAI_BASE_URL
 ANTHROPIC_API_KEY
 ANTHROPIC_BASE_URL
 
+# Google Gemini SDK compatibility
+GEMINI_API_KEY
+GOOGLE_GEMINI_BASE_URL
+
 # Netlify-specific
 NETLIFY_AI_GATEWAY_KEY
 NETLIFY_AI_GATEWAY_BASE_URL
@@ -44,13 +48,23 @@ NETLIFY_AI_GATEWAY_BASE_URL
 
 **No manual setup required** — just use the SDKs.
 
-### Verify AI Gateway is Available
+### Initialize Clients Inside Request Handlers
+
+AI Gateway env vars are injected at runtime, not during module evaluation. In SSR contexts (Astro API routes, Netlify Functions), **always initialize SDK clients inside the request handler**:
 
 ```typescript
-if (!process.env.OPENAI_BASE_URL) {
-  throw new Error('AI Gateway not available. Run with netlify dev or deploy to Netlify.');
-}
+// WRONG — env vars may not exist when module loads
+const client = new Anthropic();
+export const POST: APIRoute = async ({ request }) => { ... };
+
+// CORRECT — env vars are available at request time
+export const POST: APIRoute = async ({ request }) => {
+  const client = new Anthropic();
+  // ...
+};
 ```
+
+This applies to all providers (Anthropic, OpenAI, Google Gemini).
 
 ---
 
@@ -67,8 +81,8 @@ npm install openai
 ```typescript
 import OpenAI from 'openai';
 
+// Initialize inside handler — see "Initialize Clients Inside Request Handlers"
 const client = new OpenAI();
-// Automatically uses OPENAI_API_KEY and OPENAI_BASE_URL from environment
 
 const response = await client.chat.completions.create({
   model: 'gpt-4o-mini',
@@ -111,8 +125,8 @@ npm install @anthropic-ai/sdk
 ```typescript
 import Anthropic from '@anthropic-ai/sdk';
 
+// Initialize inside handler — see "Initialize Clients Inside Request Handlers"
 const client = new Anthropic();
-// Automatically uses ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL from environment
 
 const response = await client.messages.create({
   model: 'claude-sonnet-4-5-20250929',
@@ -143,8 +157,6 @@ const response = await client.messages.create({
 import type { Context, Config } from '@netlify/functions';
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic();
-
 export default async (request: Request, context: Context) => {
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -155,6 +167,8 @@ export default async (request: Request, context: Context) => {
   if (!text || typeof text !== 'string') {
     return Response.json({ error: 'Text is required' }, { status: 400 });
   }
+
+  const client = new Anthropic();
 
   try {
     const response = await client.messages.create({
@@ -182,6 +196,34 @@ export const config: Config = {
   method: 'POST',
 };
 ```
+
+---
+
+## Using the Google Gemini SDK
+
+### Installation
+
+```bash
+npm install @google/genai
+```
+
+### Basic Usage
+
+```typescript
+import { GoogleGenAI } from '@google/genai';
+
+// Initialize inside handler — constructor requires an empty object
+const ai = new GoogleGenAI({});
+
+const response = await ai.models.generateContent({
+  model: 'gemini-2.0-flash',
+  contents: 'Explain recursion in one sentence.',
+});
+
+const answer = response.text;
+```
+
+**Note:** The `GoogleGenAI` constructor requires an empty object (`{}`) rather than no arguments when using AI Gateway's auto-injected env vars.
 
 ---
 
@@ -222,8 +264,6 @@ import type { APIRoute } from 'astro';
 import Anthropic from '@anthropic-ai/sdk';
 import { getUserWithApproval } from '../../../lib/auth';
 
-const client = new Anthropic();
-
 export const POST: APIRoute = async ({ request, redirect }) => {
   const auth = await getUserWithApproval(request);
   if (!auth?.isAdmin) {
@@ -236,6 +276,8 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   if (!text) {
     return redirect('/?message=validation_error', 302);
   }
+
+  const client = new Anthropic();
 
   try {
     const response = await client.messages.create({
@@ -295,6 +337,7 @@ try {
 
 ## Anti-Patterns
 
+- **Initializing SDK clients at module scope** - AI Gateway env vars are injected at runtime; initialize inside request handlers
 - **Using AI for trivial tasks** - Only use when it adds value
 - **No error handling** - AI APIs can fail; handle gracefully
 - **Exposing raw AI output** - Validate/sanitize before displaying
