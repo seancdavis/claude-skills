@@ -12,7 +12,13 @@
       "Bash(wc:*)",
       "Bash(npx prettier:*)",
       "Bash(claude:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(while read f)",
+      "Bash(do jq -r '.permissions.allow[]? // empty' \"$f\" done)",
+      "Bash(do jq:*)",
+      "Bash(done)",
+      "Bash(/dev/null -exec echo \"=== {} ===\" ; -exec cat {} ;)",
+      "Bash(gh pr:*)"
     ]
   }
 }
