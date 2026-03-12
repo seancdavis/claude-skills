@@ -40,8 +40,8 @@ const colors = {
 
 const levelConfig = {
   debug: { priority: 0, color: colors.magenta, label: 'DEBUG' },
-  info: { priority: 1, color: colors.cyan, label: ' INFO' },
-  warn: { priority: 2, color: colors.yellow, label: ' WARN' },
+  info: { priority: 1, color: colors.cyan, label: 'INFO' },
+  warn: { priority: 2, color: colors.yellow, label: 'WARN' },
   error: { priority: 3, color: colors.red, label: 'ERROR' },
 };
 
