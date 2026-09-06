@@ -84,6 +84,7 @@ autopilot needs something concrete to build toward and to be checked against. Th
 - **Use an existing issue** if the work already has one — take its reference.
 - **Create one** if it doesn't. You're at the keyboard: confirm the one-liner with Sean, then file it.
 - **Name the branch for the issue** so the trail is obvious end to end — autopilot builds on it, `open-pr` closes the issue from the PR.
+- **Cut it from a current base.** `git fetch` and fast-forward the default branch before branching. A run built on a stale base gets audited against code that already moved, and the PR lands full of conflicts Sean has to unwind by hand. Skip only for a stated reason — the project's `CLAUDE.md` bases branches on something else, the tree is dirty, or the fast-forward isn't clean — and say which, rather than skipping silently.
 
 Keep this **tracker-agnostic and portable** — don't compile a tracker into the skill:
 

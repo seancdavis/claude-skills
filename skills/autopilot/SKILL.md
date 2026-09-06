@@ -17,7 +17,7 @@ Nobody is watching. Sean set the work up in `preflight`, hit the walk-away line,
 ## Preconditions — fail safe, because no one's here
 
 - **A settled spec must exist** (from `preflight`, at `docs/autopilot/…`, or passed in). If it's missing, thin, or ambiguous, **do not proceed** — leave a note saying what's unclear and stop. An unattended run on a vague spec does unattended damage.
-- **Be on a branch.** Create the one named in the spec if it doesn't exist. Never run this on `main`.
+- **Be on a branch, cut from a current base.** `git fetch` and fast-forward the default branch first, then create the branch named in the spec if it doesn't exist. If the branch already exists and is behind, fast-forward it onto the updated base. Never run this on `main`. Two exceptions: a project convention in `CLAUDE.md` that bases branches elsewhere, and a base update that isn't a clean fast-forward — don't fight a merge unattended, record that the run is on a stale base and carry on.
 - **When you hit something the spec doesn't cover and you can't resolve from it, stop and record it.** Don't guess to keep moving. A clear "blocked on X" beats a confident wrong turn Sean has to unwind.
 
 ## The roster
@@ -104,7 +104,7 @@ Then stop. Never merge the PR and never deploy — Sean reviews the preview and 
 
 ## Guardrails, in one place
 
-- Work on a branch; commit at clean points; end by pushing + opening a PR (via `open-pr`) — ready-for-review when the completeness gate passed clean, draft when anything is unmet. Never merge or deploy.
+- Start from a freshly fetched base; work on a branch; commit at clean points; end by pushing + opening a PR (via `open-pr`) — ready-for-review when the completeness gate passed clean, draft when anything is unmet. Never merge or deploy.
 - Orchestrator never edits code and never audits — but it always measures: every slice check and done-signal item gets _run_, never taken on self-report.
 - Auditor is read-only (`task` without `--write`); developer and auditor are different models.
 - Fresh developer per slice; never advance the queue past a red check.
