@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 While pre-1.0, `minor` (`0.X.0`) covers new skills, features, and breaking changes;
 `patch` (`0.0.X`) covers fixes and docs.
 
+## [0.6.5] - 2026-09-06
+
+### Changed
+
+- `preflight` now fetches and fast-forwards the default branch before cutting the issue branch, so an unattended run isn't built on a stale base. It skips only for a stated reason — a project convention that bases branches elsewhere, a dirty tree, or a fast-forward that isn't clean.
+- `autopilot` refreshes the base the same way before it starts, and fast-forwards an existing work branch that has fallen behind. If that isn't a clean fast-forward it records "stale base" and carries on, rather than attempting a merge with nobody there to resolve it.
+
 ## [0.6.4] - 2026-08-28
 
 ### Changed
